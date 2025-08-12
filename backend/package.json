@@ -12,6 +12,8 @@
     "start:prod": "NODE_ENV=production node dist/production-server.js",
     "typecheck": "tsc --noEmit",
     "migrate": "node dist/scripts/init.js",
+    "setup:postgres": "psql -f scripts/setup-postgres.sql",
+    "migrate:sqlite-to-postgres": "node scripts/migrate-sqlite-to-postgres.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "pm2:start": "pm2 start ecosystem.config.js --env production",
     "pm2:stop": "pm2 stop ecosystem.config.js",

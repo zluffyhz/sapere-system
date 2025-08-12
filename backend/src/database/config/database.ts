@@ -7,8 +7,18 @@ import bcrypt from 'bcryptjs';
 
 dotenv.config();
 
-// Para desenvolvimento local, usar SQLite se PostgreSQL não estiver disponível
-const usePostgres = (process.env.NODE_ENV === 'production' && process.env.DATABASE_URL) || (process.env.DB_HOST && process.env.DB_HOST !== '');
+// Estratégia de banco:
+// - Desenvolvimento: SQLite (simples, sem dependências)
+// - Produção: PostgreSQL (escalável, robusto)
+const usePostgres = process.env.NODE_ENV === 'production' || 
+                   process.env.DATABASE_URL || 
+                   (process.env.DB_HOST && process.env.DB_HOST !== '');
+
+console.log('🔧 Configuração do banco de dados:');
+console.log('   NODE_ENV:', process.env.NODE_ENV || 'development');
+console.log('   DATABASE_URL:', process.env.DATABASE_URL ? 'Configurado' : 'Não configurado');
+console.log('   DB_HOST:', process.env.DB_HOST || 'Não configurado');
+console.log('   📊 Banco escolhido:', usePostgres ? '🐘 PostgreSQL' : '📁 SQLite');
 
 let pool: Pool;
 let sqliteDb: Database;
