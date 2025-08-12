@@ -39,6 +39,7 @@ interface Patient {
 
 interface AnamneseModalProps {
   anamnese: AnamneseCompartilhada | null;
+  templates?: AnamneseTemplate[];
   professionals: Professional[];
   patients: Patient[];
   onSave: (data: CreateAnamneseRequest) => Promise<void>;
@@ -108,7 +109,9 @@ const AnamneseModal: React.FC<AnamneseModalProps> = ({
         categoria: anamnese.categoria,
         visibilidade: 'publica',
         tags: anamnese.tags || [],
-        observacoes: anamnese.observacoes || ''
+        observacoes: anamnese.observacoes || '',
+        uploadedFiles: [],
+        creationType: 'form'
       });
     }
   }, [anamnese]);

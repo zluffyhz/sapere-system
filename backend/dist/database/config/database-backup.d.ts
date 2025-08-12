@@ -5,7 +5,7 @@ export declare const query: (text: string, params?: any[]) => Promise<import("pg
     rows: any[];
     rowCount: number;
 }>;
-export declare const getClient: () => Promise<import("pg").PoolClient>;
+export declare const getClient: () => Promise<import("pg").PoolClient> | null;
 declare const _default: Pool | Database<sqlite3.Database, sqlite3.Statement>;
 export default _default;
 //# sourceMappingURL=database-backup.d.ts.map

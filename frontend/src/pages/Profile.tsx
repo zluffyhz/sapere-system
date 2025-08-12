@@ -47,7 +47,7 @@ const Profile: React.FC = () => {
     name: user?.name || '',
     email: user?.email || '',
     phone: user?.phone || '',
-    address: user?.address || '',
+    address: typeof user?.address === 'string' ? user.address : '',
     bio: user?.bio || ''
   });
 
@@ -196,7 +196,7 @@ const Profile: React.FC = () => {
                     name: user?.name || '',
                     email: user?.email || '',
                     phone: user?.phone || '',
-                    address: user?.address || '',
+                    address: typeof user?.address === 'string' ? user.address : '',
                     bio: user?.bio || ''
                   });
                   setErrors({});
@@ -349,7 +349,7 @@ const Profile: React.FC = () => {
                   />
                 ) : (
                   <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-lg">
-                    {user?.address || 'Não informado'}
+                    {typeof user?.address === 'string' ? user.address : 'Não informado'}
                   </p>
                 )}
               </div>

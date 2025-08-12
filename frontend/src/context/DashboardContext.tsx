@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import mockAppointmentsAPI from '@/services/mockAppointments';
 import mockPatientsAPI from '@/services/mockPatients';
 import mockAnamneseAPI from '@/services/mockAnamnese';
-import type { Appointment, Patient } from '@/types/appointments';
+import type { Appointment, Patient } from '@/types';
 
 interface DashboardData {
   totalPatients: number;
@@ -106,18 +106,18 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
 
       // Calcular estatísticas
       const appointmentsToday = appointments.filter((apt: Appointment) => {
-        const aptDate = new Date(apt.appointment_date);
+        const aptDate = new Date(apt.appointment_date || apt.inicio);
         return aptDate >= todayStart && aptDate < new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
       }).length;
 
       const appointmentsThisWeek = appointments.filter((apt: Appointment) => {
-        const aptDate = new Date(apt.appointment_date);
+        const aptDate = new Date(apt.appointment_date || apt.inicio);
         return aptDate >= weekStart;
       }).length;
 
       const recordsThisMonth = appointments.filter((apt: Appointment) => {
-        const aptDate = new Date(apt.appointment_date);
-        return aptDate >= monthStart && apt.status === 'completed';
+        const aptDate = new Date(apt.appointment_date || apt.inicio);
+        return aptDate >= monthStart && (apt.status === 'completed' || apt.status === 'atendido');
       }).length;
 
       const anamnesisThisMonth = anamneses.filter((anamnesis: any) => {
@@ -132,18 +132,18 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
       const last1m = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
       const therapiesCompleted24h = appointments.filter((apt: Appointment) => {
-        const aptDate = new Date(apt.appointment_date);
-        return apt.status === 'completed' && aptDate >= last24h;
+        const aptDate = new Date(apt.appointment_date || apt.inicio);
+        return (apt.status === 'completed' || apt.status === 'atendido') && aptDate >= last24h;
       }).length;
 
       const therapiesCompleted7d = appointments.filter((apt: Appointment) => {
-        const aptDate = new Date(apt.appointment_date);
-        return apt.status === 'completed' && aptDate >= last7d;
+        const aptDate = new Date(apt.appointment_date || apt.inicio);
+        return (apt.status === 'completed' || apt.status === 'atendido') && aptDate >= last7d;
       }).length;
 
       const therapiesCompleted1m = appointments.filter((apt: Appointment) => {
-        const aptDate = new Date(apt.appointment_date);
-        return apt.status === 'completed' && aptDate >= last1m;
+        const aptDate = new Date(apt.appointment_date || apt.inicio);
+        return (apt.status === 'completed' || apt.status === 'atendido') && aptDate >= last1m;
       }).length;
 
       setData({
@@ -160,20 +160,20 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
 
       // Gerar sessões de hoje
       const todayAppointments = appointments.filter((apt: Appointment) => {
-        const aptDate = new Date(apt.appointment_date);
+        const aptDate = new Date(apt.appointment_date || apt.inicio);
         return aptDate >= todayStart && aptDate < new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
       });
 
       const sessions: TodaySession[] = todayAppointments.map((apt: Appointment) => {
-        const patient = patients.find((p: Patient) => p.id === apt.patient_id);
-        const patientName = patient ? patient.name : 'Paciente não encontrado';
+        const patient = patients.find((p: Patient) => p.id === (apt.patient_id || apt.patientId));
+        const patientName = patient ? (patient.name || patient.nome) : 'Paciente não encontrado';
         
         return {
           id: apt.id,
           patientName,
           patientInitials: generateInitials(patientName),
-          professionalName: apt.therapist?.user?.name || 'Profissional',
-          time: new Date(apt.appointment_date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+          professionalName: apt.therapist?.user?.name || apt.professional?.user?.name || 'Profissional',
+          time: new Date(apt.appointment_date || apt.inicio).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
           status: apt.status as TodaySession['status'],
           color: getSessionColor(apt.status)
         };
@@ -194,7 +194,7 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
           id: `patient-${patient.id}`,
           type: 'patient_created',
           title: 'Novo paciente',
-          description: `cadastrado: ${patient.name}`,
+          description: `cadastrado: ${patient.name || patient.nome}`,
           user: 'Admin',
           timestamp: getRelativeTime(new Date(patient.created_at || '')),
           color: 'bg-sapere-orange'
@@ -220,19 +220,19 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
 
       // Adicionar consultas concluídas recentes
       const completedAppointments = appointments
-        .filter((apt: Appointment) => apt.status === 'completed')
-        .sort((a: Appointment, b: Appointment) => new Date(b.appointment_date).getTime() - new Date(a.appointment_date).getTime())
+        .filter((apt: Appointment) => apt.status === 'completed' || apt.status === 'atendido')
+        .sort((a: Appointment, b: Appointment) => new Date(b.appointment_date || b.inicio).getTime() - new Date(a.appointment_date || a.inicio).getTime())
         .slice(0, 2);
 
       completedAppointments.forEach((apt: Appointment) => {
-        const patient = patients.find((p: Patient) => p.id === apt.patient_id);
+        const patient = patients.find((p: Patient) => p.id === (apt.patient_id || apt.patientId));
         activities.push({
           id: `appointment-${apt.id}`,
           type: 'appointment_completed',
           title: 'Sessão finalizada',
-          description: `com ${patient?.name || 'Paciente'}`,
-          user: apt.therapist?.user?.name || 'Profissional',
-          timestamp: getRelativeTime(new Date(apt.appointment_date)),
+          description: `com ${patient?.name || patient?.nome || 'Paciente'}`,
+          user: apt.therapist?.user?.name || apt.professional?.user?.name || 'Profissional',
+          timestamp: getRelativeTime(new Date(apt.appointment_date || apt.inicio)),
           color: 'bg-sapere-whatsapp'
         });
       });

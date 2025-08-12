@@ -1,7 +1,7 @@
 // Tipos básicos
 export type UserRole = 'admin' | 'profissional' | 'therapist' | 'responsible';
 export type UserStatus = 'active' | 'inactive' | 'pending';
-export type AppointmentStatus = 'scheduled' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'no_show' | 'rescheduled';
+export type AppointmentStatus = 'scheduled' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'no_show' | 'rescheduled' | 'agendado' | 'confirmado' | 'em_atendimento' | 'atendido' | 'falta' | 'cancelado';
 export type CommunicationType = 'sms' | 'email' | 'whatsapp' | 'call';
 export type CommunicationStatus = 'pending' | 'sent' | 'delivered' | 'read' | 'failed' | 'cancelled';
 export type RecordType = 'initial_assessment' | 'evolution' | 'discharge' | 'intercurrence' | 'family_guidance';
@@ -100,10 +100,13 @@ export interface Therapist {
 export interface Patient {
   id: string;
   name: string;
+  nome?: string; // alias for consistency
   social_name?: string;
   email?: string;
   phone?: string;
+  telefone?: string; // alias for consistency
   birth_date: string;
+  nascimento?: string; // alias for consistency
   cpf?: string;
   rg?: string;
   gender?: string;
@@ -117,19 +120,40 @@ export interface Patient {
   emergency_contacts?: EmergencyContact[];
   general_notes?: string;
   internal_notes?: string;
+  observacoes?: string; // alias for notes
   active: boolean;
   first_appointment_at?: string;
   last_appointment_at?: string;
   created_at: string;
   updated_at: string;
   responsibles?: User[];
+  
+  // Additional fields for compatibility
+  contatos?: {
+    email?: string;
+    telefone?: string;
+  };
+  responsavel?: {
+    nome?: string;
+    cpf?: string;
+    telefone?: string;
+  };
+  convenio?: {
+    nome?: string;
+    numero?: string;
+  };
+  tags?: string[];
 }
 
 export interface Appointment {
   id: string;
   patient_id: string;
+  patientId: string; // alias for consistency
   therapist_id: string;
+  professionalId: string; // alias for consistency
   appointment_date: string;
+  inicio: string; // alias for consistency
+  fim: string; // alias for consistency
   duration: number;
   timezone: string;
   status: AppointmentStatus;
@@ -139,6 +163,7 @@ export interface Appointment {
   appointment_type?: string;
   session_number?: number;
   notes?: string;
+  motivo?: string; // alias for notes
   original_appointment_id?: string;
   rescheduled_reason?: string;
   cancelled_reason?: string;
@@ -148,6 +173,19 @@ export interface Appointment {
   updated_at: string;
   patient?: Patient;
   therapist?: Therapist;
+  professional?: Therapist; // alias for therapist
+  
+  // Compatibility fields
+  patient_name?: string;
+  therapist_name?: string;
+  professionalName?: string;
+  
+  // Additional computed fields
+  isToday?: boolean;
+  isPast?: boolean;
+  isFuture?: boolean;
+  canEdit?: boolean;
+  canCancel?: boolean;
 }
 
 export interface Record {
@@ -204,6 +242,21 @@ export interface ClinicSettings {
   address: Address;
   created_at: string;
   updated_at: string;
+}
+
+export interface SystemNotification {
+  id: string;
+  type: 'patient_created' | 'appointment_scheduled' | 'appointment_completed' | 'session_started' | 'reminder_sent' | 'error' | 'info';
+  title: string;
+  message: string;
+  priority: 'low' | 'normal' | 'high' | 'urgent';
+  read: boolean;
+  createdAt: string;
+  data?: { [key: string]: any };
+}
+
+export interface PatientDetails extends Patient {
+  // PatientDetails should include all Patient fields
 }
 
 export interface AuthResponse {

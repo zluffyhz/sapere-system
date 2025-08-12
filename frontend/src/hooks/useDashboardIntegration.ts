@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { useDashboard } from '@/context/DashboardContext';
 import { useSystemNotifications } from '@/context/SystemNotificationsContext';
 import { useAuth } from '@/context/AuthContext';
-import type { Patient } from '@/types/appointments';
+import type { Patient } from '@/types';
 import type { AnamneseCompartilhada } from '@/types/anamnese';
 
 export const useDashboardIntegration = () => {
@@ -15,7 +15,7 @@ export const useDashboardIntegration = () => {
     addActivity({
       type: 'patient_created',
       title: 'Novo paciente',
-      description: `cadastrado: ${patient.name}`,
+      description: `cadastrado: ${patient.name || patient.nome}`,
       user: user?.name || 'Sistema',
       color: 'bg-sapere-orange'
     });
@@ -24,8 +24,9 @@ export const useDashboardIntegration = () => {
     addSystemNotification({
       type: 'patient_created',
       title: 'Novo paciente cadastrado',
-      message: `${patient.name} foi adicionado ao sistema`,
+      message: `${patient.name || patient.nome} foi adicionado ao sistema`,
       priority: 'normal',
+      read: false,
       data: { patientId: patient.id }
     });
     
@@ -59,7 +60,8 @@ export const useDashboardIntegration = () => {
       type: 'appointment_scheduled',
       title: 'Novo agendamento',
       message: `Consulta agendada para ${patientName} - ${appointmentDate.toLocaleDateString('pt-BR')}`,
-      priority: isToday || isTomorrow ? 'high' : 'normal'
+      priority: isToday || isTomorrow ? 'high' : 'normal',
+      read: false
     });
 
     setTimeout(() => refreshData(), 1000);
@@ -79,7 +81,8 @@ export const useDashboardIntegration = () => {
       type: 'appointment_completed',
       title: 'Sessão finalizada',
       message: `${professionalName} finalizou a sessão com ${patientName}`,
-      priority: 'normal'
+      priority: 'normal',
+      read: false
     });
 
     setTimeout(() => refreshData(), 1000);

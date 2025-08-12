@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 console.log('🔑 AuthController carregado com persistência em banco');
 
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response): Promise<Response> => {
   try {
     console.log('🚀 Tentativa de login:', req.body);
     
@@ -87,7 +87,7 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-export const register = async (req: Request, res: Response) => {
+export const register = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { email, password, name, role = 'therapist' } = req.body;
 
