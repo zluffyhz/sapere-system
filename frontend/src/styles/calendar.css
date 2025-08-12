@@ -1,0 +1,183 @@
+/* Estilos para o calendário com drag & drop */
+
+.drop-target-active {
+  @apply bg-sapere-orange/20 ring-2 ring-sapere-orange ring-opacity-50;
+  animation: pulse-drop 1s ease-in-out infinite;
+}
+
+@keyframes pulse-drop {
+  0%, 100% {
+    @apply ring-opacity-50;
+  }
+  50% {
+    @apply ring-opacity-100;
+  }
+}
+
+/* Estilos para elementos sendo arrastados */
+.dragging {
+  @apply opacity-80 scale-105 rotate-1 shadow-2xl;
+  transition: none !important;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Estilos para slots de tempo durante o drag */
+.time-slot {
+  transition: all 0.2s ease;
+}
+
+.time-slot:hover {
+  @apply bg-gray-100;
+}
+
+.time-slot.drop-target {
+  @apply bg-sapere-orange/10 border-sapere-orange border-2 border-dashed;
+}
+
+/* Cursor personalizado durante drag */
+.cursor-grabbing * {
+  cursor: grabbing !important;
+}
+
+/* Animações para cards de sessão */
+.appointment-card {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.appointment-card:hover {
+  @apply scale-105 shadow-lg;
+}
+
+.appointment-card.dragging {
+  @apply scale-110 shadow-2xl;
+  transform-origin: center;
+}
+
+/* Estilos para indicadores de status */
+.status-indicator {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.status-scheduled {
+  @apply bg-sapere-orange;
+}
+
+.status-confirmed {
+  @apply bg-blue-500;
+}
+
+.status-in-progress {
+  @apply bg-green-500;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.status-completed {
+  @apply bg-green-800;
+}
+
+.status-no-show {
+  @apply bg-red-500;
+}
+
+.status-cancelled {
+  @apply bg-gray-500;
+}
+
+/* Estilos para linha do tempo atual */
+.current-time-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #F97316, #FB923C);
+  box-shadow: 0 0 10px rgba(249, 115, 22, 0.5);
+  z-index: 10;
+}
+
+.current-time-line::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: -4px;
+  width: 10px;
+  height: 10px;
+  background: #F97316;
+  border-radius: 50%;
+  box-shadow: 0 0 5px rgba(249, 115, 22, 0.7);
+}
+
+/* Estilos responsive para mobile */
+@media (max-width: 768px) {
+  .appointment-card {
+    @apply text-xs;
+  }
+  
+  .appointment-card .move-handle {
+    @apply hidden;
+  }
+  
+  .time-slot {
+    @apply text-xs;
+  }
+}
+
+/* Estilos para tooltips de drag & drop */
+.drag-tooltip {
+  position: fixed;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  z-index: 10000;
+  pointer-events: none;
+  transform: translate(-50%, -100%);
+  margin-top: -10px;
+}
+
+.drag-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.8);
+}
+
+/* Estilos para feedback visual durante o drag */
+.drag-preview {
+  position: fixed;
+  background: white;
+  border: 2px solid #F97316;
+  border-radius: 8px;
+  padding: 8px;
+  font-size: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  z-index: 10001;
+  pointer-events: none;
+  transform: rotate(2deg);
+}
+
+/* Animação de sucesso ao soltar */
+@keyframes drop-success {
+  0% {
+    @apply scale-100;
+  }
+  50% {
+    @apply scale-110;
+  }
+  100% {
+    @apply scale-100;
+  }
+}
+
+.drop-success {
+  animation: drop-success 0.3s ease-out;
+}

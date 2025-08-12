@@ -1,0 +1,64 @@
+
+> sapere-frontend@1.0.0 dev
+> vite
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+  VITE v5.4.19  ready in 162 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: http://192.168.100.79:5173/
+(node:13788) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/cesarhenrique/WINDOF/sapere-system/frontend/postcss.config.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/cesarhenrique/WINDOF/sapere-system/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+12:05:08 AM [vite] Internal server error: [postcss] /Users/cesarhenrique/WINDOF/sapere-system/frontend/node_modules/tailwindcss/base.css:1:1: The `border-border` class does not exist. If `border-border` is a custom class, make sure it is defined within a `@layer` directive.
+  Plugin: vite:css
+  File: /Users/cesarhenrique/WINDOF/sapere-system/frontend/node_modules/tailwindcss/base.css:1:0
+  1  |  @tailwind base;
+     |  ^
+  2  |  
+      at Input.error (/Users/cesarhenrique/WINDOF/sapere-system/frontend/node_modules/postcss/lib/input.js:135:16)
+      at AtRule.error (/Users/cesarhenrique/WINDOF/sapere-system/frontend/node_modules/postcss/lib/node.js:146:32)
+      at processApply (/Users/cesarhenrique/WINDOF/sapere-system/frontend/node_modules/tailwindcss/lib/lib/expandApplyAtRules.js:380:29)
+      at /Users/cesarhenrique/WINDOF/sapere-system/frontend/node_modules/tailwindcss/lib/lib/expandApplyAtRules.js:551:9
+      at /Users/cesarhenrique/WINDOF/sapere-system/frontend/node_modules/tailwindcss/lib/processTailwindFeatures.js:55:50
+      at async plugins (/Users/cesarhenrique/WINDOF/sapere-system/frontend/node_modules/tailwindcss/lib/plugin.js:38:17)
+      at async LazyResult.runAsync (/Users/cesarhenrique/WINDOF/sapere-system/frontend/node_modules/postcss/lib/lazy-result.js:293:11)
+      at async compileCSS (file:///Users/cesarhenrique/WINDOF/sapere-system/frontend/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:36898:21)
+      at async TransformPluginContext.transform (file:///Users/cesarhenrique/WINDOF/sapere-system/frontend/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:36171:11)
+      at async PluginContainer.transform (file:///Users/cesarhenrique/WINDOF/sapere-system/frontend/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:49099:18)
+      at async loadAndTransform (file:///Users/cesarhenrique/WINDOF/sapere-system/frontend/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:51977:27)
+12:05:08 AM [vite] Pre-transform error: [postcss] /Users/cesarhenrique/WINDOF/sapere-system/frontend/node_modules/tailwindcss/base.css:1:1: The `border-border` class does not exist. If `border-border` is a custom class, make sure it is defined within a `@layer` directive.
+12:13:09 AM [vite] hmr update /src/components/Layout/Header.tsx
+12:13:09 AM [vite] hmr update /src/components/Layout/Layout.tsx
+12:13:09 AM [vite] hmr update /src/components/ProtectedRoute.tsx
+12:13:09 AM [vite] hmr update /src/pages/Login.tsx
+12:14:41 AM [vite] hmr update /src/components/Dashboard/DashboardStats.tsx
+12:14:41 AM [vite] hmr update /src/components/Communication/TemplateManager.tsx
+12:14:41 AM [vite] hmr update /src/components/Communication/CommunicationCenter.tsx
+12:14:41 AM [vite] hmr update /src/components/Communication/EngagementDashboard.tsx
+12:14:41 AM [vite] hmr update /src/components/Calendar/AppointmentModal.tsx
+12:14:41 AM [vite] hmr update /src/components/Calendar/DaySidebar.tsx
+12:14:41 AM [vite] hmr update /src/components/Calendar/WeeklyCalendar.tsx
+12:14:41 AM [vite] hmr update /src/components/Calendar/DailyCalendar.tsx
+12:14:41 AM [vite] hmr update /src/components/Therapists/TherapistModal.tsx
+12:19:47 AM [vite] hmr update /src/App.tsx
+12:19:51 AM [vite] hmr update /src/pages/Login.tsx
+12:19:51 AM [vite] hmr update /src/pages/Dashboard.tsx
+12:19:51 AM [vite] hmr update /src/pages/Calendar.tsx
+12:19:51 AM [vite] hmr update /src/pages/Communication.tsx
+12:19:51 AM [vite] hmr update /src/pages/TherapistDashboard.tsx
+12:19:51 AM [vite] hmr update /src/pages/Therapists.tsx
+12:20:15 AM [vite] hmr update /src/pages/TherapistDashboard.tsx, /src/pages/Therapists.tsx
+12:20:15 AM [vite] page reload src/hooks/useDragAndDrop.ts
+12:20:15 AM [vite] hmr update /src/context/AuthContext.tsx
+12:20:50 AM [vite] hmr update /src/pages/TherapistDashboard.tsx, /src/pages/Therapists.tsx
+12:20:50 AM [vite] page reload src/hooks/useDragAndDrop.ts
+12:20:50 AM [vite] hmr update /src/context/AuthContext.tsx
+12:21:21 AM [vite] hmr update /src/pages/TherapistDashboard.tsx, /src/pages/Therapists.tsx
+12:21:21 AM [vite] page reload src/hooks/useDragAndDrop.ts
+12:21:21 AM [vite] hmr update /src/context/AuthContext.tsx
+1:12:44 AM [vite] vite.config.ts changed, restarting server...
+1:12:44 AM [vite] server restarted.
+1:39:29 AM [vite] page reload index.html

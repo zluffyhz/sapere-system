@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
+  <defs>
+    <linearGradient id="heartGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700"/>
+      <stop offset="100%" style="stop-color:#FFA500"/>
+    </linearGradient>
+    <linearGradient id="heartGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700"/>
+      <stop offset="100%" style="stop-color:#FFA500"/>
+    </linearGradient>
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#FF6B35"/>
+      <stop offset="50%" style="stop-color:#FFA500"/>
+      <stop offset="100%" style="stop-color:#FF6B35"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Coração maior (fundo) -->
+  <path d="M120 80c0-20 15-35 35-35s35 15 35 35c0 0 15-35 35-35s35 15 35 35c0 25-35 60-70 90-35-30-70-65-70-90z" 
+        fill="url(#heartGradient1)" 
+        stroke="#FF6B35" 
+        stroke-width="3"/>
+  
+  <!-- Coração menor (frente) -->
+  <path d="M180 90c0-15 10-25 25-25s25 10 25 25c0 0 10-25 25-25s25 10 25 25c0 18-25 45-50 65-25-20-50-47-50-65z" 
+        fill="url(#heartGradient2)" 
+        stroke="#FF6B35" 
+        stroke-width="2"/>
+  
+  <!-- Olhos do coração maior -->
+  <ellipse cx="145" cy="95" rx="8" ry="12" fill="white" stroke="#333" stroke-width="2"/>
+  <ellipse cx="175" cy="95" rx="8" ry="12" fill="white" stroke="#333" stroke-width="2"/>
+  <circle cx="145" cy="95" r="4" fill="#333"/>
+  <circle cx="175" cy="95" r="4" fill="#333"/>
+  <circle cx="147" cy="93" r="1.5" fill="white"/>
+  <circle cx="177" cy="93" r="1.5" fill="white"/>
+  
+  <!-- Olhos do coração menor -->
+  <ellipse cx="205" cy="105" rx="6" ry="9" fill="white" stroke="#333" stroke-width="1.5"/>
+  <ellipse cx="225" cy="105" rx="6" ry="9" fill="white" stroke="#333" stroke-width="1.5"/>
+  <circle cx="205" cy="105" r="3" fill="#333"/>
+  <circle cx="225" cy="105" r="3" fill="#333"/>
+  <circle cx="206" cy="103" r="1" fill="white"/>
+  <circle cx="226" cy="103" r="1" fill="white"/>
+  
+  <!-- Texto "sapere" -->
+  <text x="200" y="220" 
+        font-family="Comic Sans MS, cursive, sans-serif" 
+        font-size="48" 
+        font-weight="bold" 
+        text-anchor="middle" 
+        fill="url(#textGradient)"
+        stroke="#D4691C" 
+        stroke-width="1">sapere</text>
+</svg>
