@@ -163,13 +163,16 @@ sudo systemctl reload nginx
 
 ### Banco de dados
 ```bash
-# Verificar arquivo
+# PostgreSQL (Produção)
+sudo systemctl status postgresql
+psql -U sapere_user -d sapere_production -c "SELECT COUNT(*) FROM users;"
+
+# SQLite (Desenvolvimento)
 ls -la backend/sapere_dev.db
 
-# Recriar se necessário
+# Migrar SQLite → PostgreSQL
 cd backend
-rm sapere_dev.db
-npm run migrate
+node scripts/migrate-sqlite-to-postgres.js
 ```
 
 ---

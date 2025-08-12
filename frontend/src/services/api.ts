@@ -407,4 +407,70 @@ export const anamneseAPI = {
   }
 };
 
+// Admin API para gerenciar usuários e terapeutas
+export const adminAPI = {
+  // Gerenciamento de usuários
+  users: {
+    list: async (): Promise<any> => {
+      const response = await api.get('/admin/users');
+      return response.data;
+    },
+    
+    updateStatus: async (userId: string, status: string): Promise<any> => {
+      const response = await api.put(`/admin/users/${userId}/status`, { status });
+      return response.data;
+    },
+    
+    resetPassword: async (userId: string, newPassword: string): Promise<any> => {
+      const response = await api.post('/admin/reset-password', { userId, new_password: newPassword });
+      return response.data;
+    },
+    
+    changeAdminPassword: async (currentPassword: string, newPassword: string): Promise<any> => {
+      const response = await api.put('/admin/change-password', {
+        current_password: currentPassword,
+        new_password: newPassword,
+        confirm_password: newPassword
+      });
+      return response.data;
+    }
+  },
+
+  // Gerenciamento de terapeutas
+  therapists: {
+    list: async (): Promise<any> => {
+      const response = await api.get('/therapists');
+      return response.data;
+    },
+    
+    create: async (therapistData: {
+      email: string;
+      password: string;
+      name: string;
+      phone?: string;
+      cpf?: string;
+      professional_id?: string;
+      specialties?: string[];
+      bio?: string;
+      experience_years?: number;
+      languages?: string[];
+      consultation_duration?: number;
+      max_daily_appointments?: number;
+    }): Promise<any> => {
+      const response = await api.post('/therapists', therapistData);
+      return response.data;
+    },
+    
+    update: async (therapistId: string, therapistData: any): Promise<any> => {
+      const response = await api.put(`/therapists/${therapistId}`, therapistData);
+      return response.data;
+    },
+    
+    deactivate: async (therapistId: string): Promise<any> => {
+      const response = await api.delete(`/therapists/${therapistId}`);
+      return response.data;
+    }
+  }
+};
+
 export default api;

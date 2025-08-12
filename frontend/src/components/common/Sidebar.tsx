@@ -11,7 +11,8 @@ import {
   Shield,
   Baby,
   TestTube,
-  MessageSquare
+  MessageSquare,
+  UserCog
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { ConditionalRender } from '@/components/common/ProtectedRoute';
@@ -49,6 +50,7 @@ const Sidebar: React.FC = () => {
     { name: 'Anamnese', href: '/anamnese', icon: Heart, roles: ['admin', 'profissional'] },
     { name: 'Comunicação', href: '/communication', icon: MessageSquare, roles: ['admin', 'profissional'] },
     { name: 'Terapeutas', href: '/therapists', icon: UserCheck, roles: ['admin'] },
+    { name: 'Administração', href: '/administration', icon: UserCog, roles: ['admin'] },
     { name: 'Configurações', href: '/settings', icon: Settings, roles: ['admin'] },
   ];
 

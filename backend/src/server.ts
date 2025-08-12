@@ -12,6 +12,8 @@ import backupService from './services/backupService';
 import authRoutes from './routes/auth';
 import protectedRoutes from './routes/protected';
 import anamneseRoutes from './routes/anamnese';
+import therapistRoutes from './routes/therapists';
+import adminRoutes from './routes/admin';
 
 dotenv.config();
 
@@ -55,6 +57,8 @@ app.use('/uploads', express.static(path.resolve(uploadDir)));
 app.use('/api/auth', authRoutes);
 app.use('/api/protected', protectedRoutes);
 app.use('/api/anamneses', anamneseRoutes);
+app.use('/api/therapists', therapistRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

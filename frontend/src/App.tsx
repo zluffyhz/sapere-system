@@ -17,6 +17,7 @@ import Patients from '@/pages/Patients';
 import Profile from '@/pages/Profile';
 import TherapySession from '@/pages/TherapySession';
 import DebugAuth from '@/pages/DebugAuth';
+import Administration from '@/pages/Administration';
 
 // Páginas de teste para demonstrar funcionalidades por role
 const TestRolesPage: React.FC = () => {
@@ -218,6 +219,15 @@ const AppContent: React.FC = () => {
                       <ClinicalRoute>
                         <TherapySession />
                       </ClinicalRoute>
+                    } 
+                  />
+                  
+                  <Route 
+                    path="/administration" 
+                    element={
+                      <AdminRoute>
+                        <Administration />
+                      </AdminRoute>
                     } 
                   />
                   

@@ -301,20 +301,42 @@ cd /var/www/sapere/backend
 node dist/production-server.js
 ```
 
-### 2. Erro de conexão com banco:
+### 2. Configurar PostgreSQL:
 ```bash
-# Verificar se SQLite está funcionando
+# Instalar PostgreSQL
+sudo apt update
+sudo apt install postgresql postgresql-contrib
+
+# Configurar banco
+sudo -u postgres psql
+CREATE DATABASE sapere_production;
+CREATE USER sapere_user WITH PASSWORD 'senha_segura';
+GRANT ALL PRIVILEGES ON DATABASE sapere_production TO sapere_user;
+\q
+
+# Executar setup inicial
 cd /var/www/sapere/backend
-sqlite3 sapere_production.db ".tables"
+psql -U sapere_user -d sapere_production -f scripts/setup-postgres.sql
 ```
 
-### 3. Problemas de CORS:
+### 3. Erro de conexão com banco:
+```bash
+# Verificar PostgreSQL
+sudo systemctl status postgresql
+sudo -u postgres psql -c "SELECT version();"
+
+# Testar conexão da aplicação
+cd /var/www/sapere/backend
+node -e "const { Pool } = require('pg'); const pool = new Pool({connectionString: process.env.DATABASE_URL}); pool.query('SELECT NOW()').then(r => console.log('✅ PostgreSQL OK:', r.rows[0])).catch(console.error);"
+```
+
+### 4. Problemas de CORS:
 ```bash
 # Verificar variável CORS_ORIGINS no .env
 # Deve incluir o domínio exato da aplicação
 ```
 
-### 4. SSL/HTTPS não funciona:
+### 5. SSL/HTTPS não funciona:
 ```bash
 # Verificar certificado
 certbot certificates

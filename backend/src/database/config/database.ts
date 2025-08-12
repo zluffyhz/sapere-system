@@ -313,29 +313,98 @@ async function initSqlite() {
       );
     `);
 
-    // Inserir usuários de teste com hash correto
-    const adminId = '1';
-    const therapistId = '2';
+    // 🔑 USUÁRIOS NATIVOS DO SISTEMA - CONFIGURE AQUI SEUS USUÁRIOS PADRÃO
+    console.log('🔑 Criando usuários nativos do sistema...');
     
-    // Gerar hash correto para admin123
-    const correctHash = await bcrypt.hash('admin123', 10);
-    console.log('🔑 Criando usuários com senha hash:', correctHash.substring(0, 20) + '...');
+    // Definir usuários e senhas nativos
+    const nativeUsers = [
+      {
+        id: '1',
+        email: 'admin@sapere.com.br',
+        password: 'Sapere@2025',  // ⚠️ ALTERE ESTA SENHA EM PRODUÇÃO
+        name: 'Administrador Sapere',
+        role: 'admin',
+        phone: '(92) 99230-5850'
+      },
+      {
+        id: '2', 
+        email: 'dra.maria@sapere.com.br',
+        password: 'Terapia@123',  // ⚠️ ALTERE ESTA SENHA EM PRODUÇÃO
+        name: 'Dra. Maria Silva',
+        role: 'therapist',
+        phone: '(92) 98888-8888'
+      },
+      {
+        id: '3',
+        email: 'dr.carlos@sapere.com.br', 
+        password: 'Psico@2025',   // ⚠️ ALTERE ESTA SENHA EM PRODUÇÃO
+        name: 'Dr. Carlos Santos',
+        role: 'therapist',
+        phone: '(92) 97777-7777'
+      },
+      {
+        id: '4',
+        email: 'recepcao@sapere.com.br',
+        password: 'Recepcao@123', // ⚠️ ALTERE ESTA SENHA EM PRODUÇÃO
+        name: 'Recepção Sapere',
+        role: 'admin',
+        phone: '(92) 99230-5850'
+      }
+    ];
 
-    await sqliteDb.run(
-      'INSERT OR REPLACE INTO users (id, email, password, name, role, status, phone, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [adminId, 'admin@sapere.com.br', correctHash, 'Admin Sapere', 'admin', 'active', '(92) 99999-9999', new Date().toISOString()]
-    );
-    
-    await sqliteDb.run(
-      'INSERT OR REPLACE INTO users (id, email, password, name, role, status, phone, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [therapistId, 'dra.maria@sapere.com.br', correctHash, 'Dra. Maria Silva', 'therapist', 'active', '(92) 98888-8888', new Date().toISOString()]
-    );
+    // Inserir usuários nativos
+    for (const user of nativeUsers) {
+      const hashedPassword = await bcrypt.hash(user.password, 10);
+      
+      await sqliteDb.run(
+        'INSERT OR REPLACE INTO users (id, email, password, name, role, status, phone, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [user.id, user.email, hashedPassword, user.name, user.role, 'active', user.phone, new Date().toISOString()]
+      );
+      
+      console.log(`✅ Usuário criado: ${user.name} (${user.email})`);
+    }
 
-    // Inserir terapeuta
-    await sqliteDb.run(
-      'INSERT OR REPLACE INTO therapists (id, user_id, specialties, bio, experience_years, languages, consultation_duration, max_daily_appointments, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [therapistId, therapistId, JSON.stringify(['Psicologia', 'Neuropsicologia']), 'Especialista em atendimento a neurodivergentes', 5, JSON.stringify(['Português']), 60, 8, 1]
-    );
+    // Inserir perfis de terapeutas para usuários com role 'therapist'
+    const therapistProfiles = [
+      {
+        id: '2',
+        user_id: '2',
+        professional_id: 'CRP 20/12345',
+        specialties: ['Psicologia Clínica', 'Neuropsicologia', 'TDAH'],
+        bio: 'Especialista em atendimento a crianças e adolescentes neurodivergentes com mais de 10 anos de experiência.',
+        experience_years: 10,
+        languages: ['Português', 'Inglês']
+      },
+      {
+        id: '3',
+        user_id: '3', 
+        professional_id: 'CRP 20/67890',
+        specialties: ['Psicologia Infantil', 'TEA', 'Análise Comportamental'],
+        bio: 'Psicólogo especializado em Transtorno do Espectro Autista e análise comportamental aplicada.',
+        experience_years: 8,
+        languages: ['Português']
+      }
+    ];
+
+    for (const therapist of therapistProfiles) {
+      await sqliteDb.run(
+        'INSERT OR REPLACE INTO therapists (id, user_id, professional_id, specialties, bio, experience_years, languages, consultation_duration, max_daily_appointments, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [
+          therapist.id, 
+          therapist.user_id, 
+          therapist.professional_id,
+          JSON.stringify(therapist.specialties), 
+          therapist.bio, 
+          therapist.experience_years, 
+          JSON.stringify(therapist.languages), 
+          60, // duração padrão da consulta
+          8,  // máximo de consultas por dia
+          1   // ativo
+        ]
+      );
+      
+      console.log(`✅ Perfil de terapeuta criado para: ${therapist.professional_id}`);
+    }
 
     // Inserir pacientes de exemplo
     const patient1Id = 'p1';
@@ -343,12 +412,12 @@ async function initSqlite() {
 
     await sqliteDb.run(
       'INSERT OR REPLACE INTO patients (id, name, email, phone, birth_date, diagnosis, responsible_users, active, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [patient1Id, 'João Silva', 'joao@exemplo.com', '(92) 99111-1111', '2010-05-15', JSON.stringify(['TDAH']), JSON.stringify([adminId]), 1, new Date().toISOString()]
+      [patient1Id, 'João Silva', 'joao@exemplo.com', '(92) 99111-1111', '2010-05-15', JSON.stringify(['TDAH']), JSON.stringify(['1']), 1, new Date().toISOString()]
     );
 
     await sqliteDb.run(
       'INSERT OR REPLACE INTO patients (id, name, email, phone, birth_date, diagnosis, responsible_users, active, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [patient2Id, 'Maria Santos', 'maria@exemplo.com', '(92) 99222-2222', '2012-08-20', JSON.stringify(['TEA']), JSON.stringify([adminId]), 1, new Date().toISOString()]
+      [patient2Id, 'Maria Santos', 'maria@exemplo.com', '(92) 99222-2222', '2012-08-20', JSON.stringify(['TEA']), JSON.stringify(['1']), 1, new Date().toISOString()]
     );
 
     // Inserir configurações da clínica
