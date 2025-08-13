@@ -47,7 +47,7 @@ export const authenticateToken = async (
     const result = await query(
       `SELECT id, email, name, role, status, phone, last_login_at 
        FROM users 
-       WHERE id = ? AND status = 'active'`,
+       WHERE id = $1 AND status = 'active'`,
       [decoded.userId]
     );
 
@@ -154,7 +154,7 @@ export const canAccessPatient = async (
     // Guardian só pode acessar pacientes sob sua responsabilidade
     if (req.user.role === 'responsible') {
       const result = await query(
-        'SELECT id FROM patients WHERE id = ? AND responsible_users LIKE ? AND active = 1',
+        'SELECT id FROM patients WHERE id = $1 AND responsible_users LIKE $2 AND active = 1',
         [patientId, `%"${req.user.id}"%`]
       );
 
@@ -191,7 +191,7 @@ export const logActivity = (action: string, resourceType: string) => {
           try {
             await query(
               `INSERT INTO activity_logs (user_id, action, resource_type, resource_id, ip_address, user_agent, new_values)
-               VALUES (?, ?, ?, ?, ?, ?, ?)`,
+               VALUES ($1, $2, $3, $4, $5, $6, $7)`,
               [
                 req.user?.id || null,
                 action,

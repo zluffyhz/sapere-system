@@ -22,7 +22,7 @@ const authenticateToken = async (req, res, next) => {
         // Buscar dados atualizados do usuário
         const result = await (0, database_1.query)(`SELECT id, email, name, role, status, phone, last_login_at 
        FROM users 
-       WHERE id = ? AND status = 'active'`, [decoded.userId]);
+       WHERE id = $1 AND status = 'active'`, [decoded.userId]);
         if (result.rows.length === 0) {
             res.status(401).json({
                 error: 'Usuário não encontrado ou inativo',
@@ -110,7 +110,7 @@ const canAccessPatient = async (req, res, next) => {
         }
         // Guardian só pode acessar pacientes sob sua responsabilidade
         if (req.user.role === 'responsible') {
-            const result = await (0, database_1.query)('SELECT id FROM patients WHERE id = ? AND responsible_users LIKE ? AND active = 1', [patientId, `%"${req.user.id}"%`]);
+            const result = await (0, database_1.query)('SELECT id FROM patients WHERE id = $1 AND responsible_users LIKE $2 AND active = 1', [patientId, `%"${req.user.id}"%`]);
             if (result.rows.length === 0) {
                 return res.status(403).json({
                     error: 'Você não tem permissão para acessar este paciente',
@@ -140,7 +140,7 @@ const logActivity = (action, resourceType) => {
                 setImmediate(async () => {
                     try {
                         await (0, database_1.query)(`INSERT INTO activity_logs (user_id, action, resource_type, resource_id, ip_address, user_agent, new_values)
-               VALUES (?, ?, ?, ?, ?, ?, ?)`, [
+               VALUES ($1, $2, $3, $4, $5, $6, $7)`, [
                             req.user?.id || null,
                             action,
                             resourceType,

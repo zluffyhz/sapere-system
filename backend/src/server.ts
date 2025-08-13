@@ -15,6 +15,7 @@ import protectedRoutes from './routes/protected';
 import anamneseRoutes from './routes/anamnese';
 import therapistRoutes from './routes/therapists';
 import adminRoutes from './routes/admin';
+import userManagementRoutes from './routes/userManagement';
 
 dotenv.config();
 
@@ -60,6 +61,7 @@ app.use('/api/protected', protectedRoutes);
 app.use('/api/anamneses', anamneseRoutes);
 app.use('/api/therapists', therapistRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/admin/users', userManagementRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

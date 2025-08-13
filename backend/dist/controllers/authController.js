@@ -12,19 +12,21 @@ console.log('🔑 AuthController carregado com persistência em banco');
 const login = async (req, res) => {
     try {
         console.log('🚀 Tentativa de login:', req.body);
-        const { email, password } = req.body;
-        if (!email || !password) {
-            console.log('❌ Email ou senha não fornecidos');
+        const { email, username, login: loginField, password } = req.body;
+        // Aceitar tanto 'email', 'username' ou 'login' como campo de identificação
+        const identifier = email || username || loginField;
+        if (!identifier || !password) {
+            console.log('❌ Login/email ou senha não fornecidos');
             return res.status(400).json({
-                error: 'Email e senha são obrigatórios'
+                error: 'Login/email e senha são obrigatórios'
             });
         }
-        // Buscar usuário no banco
-        const result = await (0, database_1.query)('SELECT * FROM users WHERE email = $1 AND status = $2', [email.toLowerCase(), 'active']);
+        // Buscar usuário no banco (email OU username)
+        const result = await (0, database_1.query)('SELECT * FROM users WHERE (email = $1 OR username = $1) AND status = $2', [identifier.toLowerCase(), 'active']);
         if (!result.rows || result.rows.length === 0) {
-            console.log('❌ Usuário não encontrado:', email);
+            console.log('❌ Usuário não encontrado:', identifier);
             return res.status(401).json({
-                error: 'Email ou senha inválidos'
+                error: 'Login/email ou senha inválidos'
             });
         }
         const user = result.rows[0];
@@ -32,9 +34,9 @@ const login = async (req, res) => {
         // Verificar senha
         const isValidPassword = await bcryptjs_1.default.compare(password, user.password);
         if (!isValidPassword) {
-            console.log('❌ Senha inválida para:', email);
+            console.log('❌ Senha inválida para:', identifier);
             return res.status(401).json({
-                error: 'Email ou senha inválidos'
+                error: 'Login/email ou senha inválidos'
             });
         }
         console.log('✅ Senha válida para:', user.name);

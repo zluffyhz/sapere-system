@@ -19,6 +19,7 @@ const protected_1 = __importDefault(require("./routes/protected"));
 const anamnese_1 = __importDefault(require("./routes/anamnese"));
 const therapists_1 = __importDefault(require("./routes/therapists"));
 const admin_1 = __importDefault(require("./routes/admin"));
+const userManagement_1 = __importDefault(require("./routes/userManagement"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const server = (0, http_1.createServer)(app);
@@ -54,6 +55,7 @@ app.use('/api/protected', protected_1.default);
 app.use('/api/anamneses', anamnese_1.default);
 app.use('/api/therapists', therapists_1.default);
 app.use('/api/admin', admin_1.default);
+app.use('/api/admin/users', userManagement_1.default);
 // Health check
 app.get('/health', (req, res) => {
     res.json({ status: 'OK', timestamp: new Date().toISOString() });

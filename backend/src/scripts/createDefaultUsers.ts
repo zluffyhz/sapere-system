@@ -67,7 +67,7 @@ export async function createDefaultUsers() {
       
       // Criar usuário
       await query(
-        'INSERT INTO users (id, email, password, name, role, status, phone, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)',
+        'INSERT INTO users (id, email, password, name, role, status, phone, created_at, updated_at, created_by) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)',
         [
           user.id, 
           user.email.toLowerCase(), 
@@ -77,7 +77,8 @@ export async function createDefaultUsers() {
           'active',
           user.phone || null,
           new Date().toISOString(), 
-          new Date().toISOString()
+          new Date().toISOString(),
+          'system' // created_by do sistema
         ]
       );
       

@@ -53,7 +53,7 @@ async function createDefaultUsers() {
             // Hash da senha
             const hashedPassword = await bcryptjs_1.default.hash(user.password, 10);
             // Criar usuário
-            await (0, database_1.query)('INSERT INTO users (id, email, password, name, role, status, phone, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)', [
+            await (0, database_1.query)('INSERT INTO users (id, email, password, name, role, status, phone, created_at, updated_at, created_by) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', [
                 user.id,
                 user.email.toLowerCase(),
                 hashedPassword,
@@ -62,7 +62,8 @@ async function createDefaultUsers() {
                 'active',
                 user.phone || null,
                 new Date().toISOString(),
-                new Date().toISOString()
+                new Date().toISOString(),
+                'system' // created_by do sistema
             ]);
             console.log(`✅ Usuário criado: ${user.name} (${user.email})`);
         }
