@@ -16,6 +16,8 @@ const backupService_1 = __importDefault(require("./services/backupService"));
 const auth_1 = __importDefault(require("./routes/auth"));
 const protected_1 = __importDefault(require("./routes/protected"));
 const anamnese_1 = __importDefault(require("./routes/anamnese"));
+const therapists_1 = __importDefault(require("./routes/therapists"));
+const admin_1 = __importDefault(require("./routes/admin"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const server = (0, http_1.createServer)(app);
@@ -49,6 +51,8 @@ app.use('/uploads', express_1.default.static(path_1.default.resolve(uploadDir)))
 app.use('/api/auth', auth_1.default);
 app.use('/api/protected', protected_1.default);
 app.use('/api/anamneses', anamnese_1.default);
+app.use('/api/therapists', therapists_1.default);
+app.use('/api/admin', admin_1.default);
 // Health check
 app.get('/health', (req, res) => {
     res.json({ status: 'OK', timestamp: new Date().toISOString() });
@@ -69,8 +73,8 @@ const startServer = async () => {
         syncService_1.default.initialize(server);
         // Inicializar serviço de backup
         await backupService_1.default.initialize();
-        // Migrations desabilitadas para desenvolvimento
-        console.log('🔧 Modo desenvolvimento - usando banco SQLite com persistência');
+        // Modo PostgreSQL apenas
+        console.log('🔧 Sistema configurado para usar PostgreSQL exclusivamente');
         server.listen(PORT, () => {
             console.log(`🚀 Servidor Sapere rodando na porta ${PORT}`);
             console.log(`📍 Health check: http://localhost:${PORT}/health`);

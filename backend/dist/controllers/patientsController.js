@@ -3,8 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getPatientsStats = exports.deactivatePatient = exports.updatePatient = exports.createPatient = exports.getPatient = exports.getPatients = void 0;
 const database_1 = require("../database/config/database");
 const uuid_1 = require("uuid");
-console.log('👥 Controlador de pacientes carregado com persistência');
-// REMOVIDO: Base de dados em memória - agora usa SQLite
+console.log('👥 Controlador de pacientes carregado com PostgreSQL');
 /*const PATIENTS = [
   {
     id: 'p1',

@@ -3,9 +3,7 @@ import { AuthRequest } from '../middleware/auth';
 import { query } from '../database/config/database';
 import { v4 as uuidv4 } from 'uuid';
 
-console.log('👥 Controlador de pacientes carregado com persistência');
-
-// REMOVIDO: Base de dados em memória - agora usa SQLite
+console.log('👥 Controlador de pacientes carregado com PostgreSQL');
 /*const PATIENTS = [
   {
     id: 'p1',

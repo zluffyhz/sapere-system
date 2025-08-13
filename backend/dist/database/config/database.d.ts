@@ -1,11 +1,6 @@
 import { Pool } from 'pg';
-import sqlite3 from 'sqlite3';
-import { Database } from 'sqlite';
-export declare const query: (text: string, params?: any[]) => Promise<import("pg").QueryResult<any> | {
-    rows: any[];
-    rowCount: number;
-}>;
-export declare const getClient: () => Promise<import("pg").PoolClient> | null;
-declare const _default: Pool | Database<sqlite3.Database, sqlite3.Statement>;
-export default _default;
+declare let pool: Pool;
+export declare const query: (text: string, params?: any[]) => Promise<import("pg").QueryResult<any>>;
+export declare const getClient: () => Promise<import("pg").PoolClient>;
+export default pool;
 //# sourceMappingURL=database.d.ts.map

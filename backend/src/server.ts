@@ -85,8 +85,8 @@ const startServer = async () => {
     // Inicializar serviço de backup
     await backupService.initialize();
     
-    // Migrations desabilitadas para desenvolvimento
-    console.log('🔧 Modo desenvolvimento - usando banco SQLite com persistência');
+    // Modo PostgreSQL apenas
+    console.log('🔧 Sistema configurado para usar PostgreSQL exclusivamente');
     
     server.listen(PORT, () => {
       console.log(`🚀 Servidor Sapere rodando na porta ${PORT}`);
