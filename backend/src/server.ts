@@ -8,6 +8,7 @@ import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import syncService from './services/syncService';
 import backupService from './services/backupService';
+import { createDefaultUsers } from './scripts/createDefaultUsers';
 
 import authRoutes from './routes/auth';
 import protectedRoutes from './routes/protected';
@@ -87,6 +88,13 @@ const startServer = async () => {
     
     // Modo PostgreSQL apenas
     console.log('🔧 Sistema configurado para usar PostgreSQL exclusivamente');
+    
+    // Criar usuários padrão
+    try {
+      await createDefaultUsers();
+    } catch (error) {
+      console.warn('⚠️ Erro ao criar usuários padrão (pode já existirem):', error.message);
+    }
     
     server.listen(PORT, () => {
       console.log(`🚀 Servidor Sapere rodando na porta ${PORT}`);

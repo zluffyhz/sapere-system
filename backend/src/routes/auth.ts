@@ -5,9 +5,9 @@ import {
   refreshToken, 
   logout, 
   getProfile, 
-  updateProfile 
-} from '../controllers/authControllerFixed';
-import { login as loginFixed } from '../controllers/authControllerFixed';
+  updateProfile,
+  login
+} from '../controllers/authController';
 import { validate } from '../middleware/validate';
 import { authenticateToken, requireAdmin, AuthRequest } from '../middleware/auth';
 import { query as dbQuery } from '../database/config/database';
@@ -103,7 +103,7 @@ router.post('/login-debug', async (req, res) => {
   }
 });
 
-router.post('/login', loginFixed);
+router.post('/login', login);
 
 // Rotas protegidas
 router.post('/refresh', 

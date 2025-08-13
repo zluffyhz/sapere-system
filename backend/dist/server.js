@@ -13,6 +13,7 @@ const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const syncService_1 = __importDefault(require("./services/syncService"));
 const backupService_1 = __importDefault(require("./services/backupService"));
+const createDefaultUsers_1 = require("./scripts/createDefaultUsers");
 const auth_1 = __importDefault(require("./routes/auth"));
 const protected_1 = __importDefault(require("./routes/protected"));
 const anamnese_1 = __importDefault(require("./routes/anamnese"));
@@ -75,6 +76,13 @@ const startServer = async () => {
         await backupService_1.default.initialize();
         // Modo PostgreSQL apenas
         console.log('🔧 Sistema configurado para usar PostgreSQL exclusivamente');
+        // Criar usuários padrão
+        try {
+            await (0, createDefaultUsers_1.createDefaultUsers)();
+        }
+        catch (error) {
+            console.warn('⚠️ Erro ao criar usuários padrão (pode já existirem):', error.message);
+        }
         server.listen(PORT, () => {
             console.log(`🚀 Servidor Sapere rodando na porta ${PORT}`);
             console.log(`📍 Health check: http://localhost:${PORT}/health`);

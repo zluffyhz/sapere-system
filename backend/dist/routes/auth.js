@@ -5,8 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
-const authControllerFixed_1 = require("../controllers/authControllerFixed");
-const authControllerFixed_2 = require("../controllers/authControllerFixed");
+const authController_1 = require("../controllers/authController");
 const validate_1 = require("../middleware/validate");
 const auth_1 = require("../middleware/auth");
 const database_1 = require("../database/config/database");
@@ -72,7 +71,7 @@ router.post('/register', [
         }
         return true;
     })
-], validate_1.validate, authControllerFixed_1.register);
+], validate_1.validate, authController_1.register);
 // Rota simples para teste
 router.post('/login-test', (req, res) => {
     res.json({ message: 'Test endpoint working', body: req.body });
@@ -91,11 +90,11 @@ router.post('/login-debug', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
-router.post('/login', authControllerFixed_2.login);
+router.post('/login', authController_1.login);
 // Rotas protegidas
-router.post('/refresh', auth_1.authenticateToken, authControllerFixed_1.refreshToken);
-router.post('/logout', auth_1.authenticateToken, authControllerFixed_1.logout);
-router.get('/profile', auth_1.authenticateToken, authControllerFixed_1.getProfile);
+router.post('/refresh', auth_1.authenticateToken, authController_1.refreshToken);
+router.post('/logout', auth_1.authenticateToken, authController_1.logout);
+router.get('/profile', auth_1.authenticateToken, authController_1.getProfile);
 router.put('/profile', auth_1.authenticateToken, [
     (0, express_validator_1.body)('name')
         .optional()
@@ -134,7 +133,7 @@ router.put('/profile', auth_1.authenticateToken, [
         .optional()
         .isURL()
         .withMessage('URL do avatar inválida')
-], validate_1.validate, authControllerFixed_1.updateProfile);
+], validate_1.validate, authController_1.updateProfile);
 router.put('/change-password', auth_1.authenticateToken, [
     (0, express_validator_1.body)('current_password')
         .notEmpty()

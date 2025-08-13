@@ -22,7 +22,7 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
 
     // Buscar usuário no banco
     const result = await query(
-      'SELECT * FROM users WHERE email = ? AND status = ?',
+      'SELECT * FROM users WHERE email = $1 AND status = $2',
       [email.toLowerCase(), 'active']
     );
     
@@ -50,7 +50,7 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
 
     // Atualizar último login
     await query(
-      'UPDATE users SET last_login_at = ? WHERE id = ?',
+      'UPDATE users SET last_login_at = $1 WHERE id = $2',
       [new Date().toISOString(), user.id]
     );
 
@@ -93,7 +93,7 @@ export const register = async (req: Request, res: Response): Promise<Response> =
 
     // Verificar se usuário já existe
     const existingResult = await query(
-      'SELECT id FROM users WHERE email = ?',
+      'SELECT id FROM users WHERE email = $1',
       [email.toLowerCase()]
     );
     
@@ -109,7 +109,7 @@ export const register = async (req: Request, res: Response): Promise<Response> =
 
     // Criar usuário no banco
     await query(
-      'INSERT INTO users (id, email, password, name, role, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO users (id, email, password, name, role, status, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
       [userId, email.toLowerCase(), hashedPassword, name, role, 'active', new Date().toISOString(), new Date().toISOString()]
     );
 
@@ -153,7 +153,7 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
     }
 
     const result = await query(
-      'SELECT id, email, name, role, status, phone, cpf, birth_date, address, avatar_url FROM users WHERE id = ?',
+      'SELECT id, email, name, role, status, phone, cpf, birth_date, address, avatar_url FROM users WHERE id = $1',
       [req.user.id]
     );
     
@@ -246,7 +246,7 @@ export const changePassword = async (req: AuthRequest, res: Response) => {
     
     // Buscar usuário atual
     const result = await query(
-      'SELECT password FROM users WHERE id = ?',
+      'SELECT password FROM users WHERE id = $1',
       [req.user.id]
     );
     
@@ -272,7 +272,7 @@ export const changePassword = async (req: AuthRequest, res: Response) => {
 
     // Atualizar senha no banco
     await query(
-      'UPDATE users SET password = ?, updated_at = ? WHERE id = ?',
+      'UPDATE users SET password = $1, updated_at = $2 WHERE id = $3',
       [hashedNewPassword, new Date().toISOString(), req.user.id]
     );
 
@@ -301,25 +301,26 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
     // Construir query dinamicamente
     const updates = [];
     const values = [];
+    let paramIndex = 1;
     
     if (name) {
-      updates.push('name = ?');
+      updates.push(`name = $${paramIndex++}`);
       values.push(name);
     }
     if (phone) {
-      updates.push('phone = ?');
+      updates.push(`phone = $${paramIndex++}`);
       values.push(phone);
     }
     if (cpf) {
-      updates.push('cpf = ?');
+      updates.push(`cpf = $${paramIndex++}`);
       values.push(cpf);
     }
     if (birth_date) {
-      updates.push('birth_date = ?');
+      updates.push(`birth_date = $${paramIndex++}`);
       values.push(birth_date);
     }
     if (address) {
-      updates.push('address = ?');
+      updates.push(`address = $${paramIndex++}`);
       values.push(address);
     }
     
@@ -329,19 +330,19 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
       });
     }
     
-    updates.push('updated_at = ?');
+    updates.push(`updated_at = $${paramIndex++}`);
     values.push(new Date().toISOString());
     values.push(req.user.id);
-
+    
     // Atualizar no banco
     await query(
-      `UPDATE users SET ${updates.join(', ')} WHERE id = ?`,
+      `UPDATE users SET ${updates.join(', ')} WHERE id = $${paramIndex}`,
       values
     );
 
     // Buscar usuário atualizado
     const result = await query(
-      'SELECT id, email, name, role, status, phone, cpf, birth_date, address FROM users WHERE id = ?',
+      'SELECT id, email, name, role, status, phone, cpf, birth_date, address FROM users WHERE id = $1',
       [req.user.id]
     );
 

@@ -20,7 +20,7 @@ const login = async (req, res) => {
             });
         }
         // Buscar usuário no banco
-        const result = await (0, database_1.query)('SELECT * FROM users WHERE email = ? AND status = ?', [email.toLowerCase(), 'active']);
+        const result = await (0, database_1.query)('SELECT * FROM users WHERE email = $1 AND status = $2', [email.toLowerCase(), 'active']);
         if (!result.rows || result.rows.length === 0) {
             console.log('❌ Usuário não encontrado:', email);
             return res.status(401).json({
@@ -39,7 +39,7 @@ const login = async (req, res) => {
         }
         console.log('✅ Senha válida para:', user.name);
         // Atualizar último login
-        await (0, database_1.query)('UPDATE users SET last_login_at = ? WHERE id = ?', [new Date().toISOString(), user.id]);
+        await (0, database_1.query)('UPDATE users SET last_login_at = $1 WHERE id = $2', [new Date().toISOString(), user.id]);
         // Gerar token
         const token = jsonwebtoken_1.default.sign({
             userId: user.id,
@@ -71,7 +71,7 @@ const register = async (req, res) => {
     try {
         const { email, password, name, role = 'therapist' } = req.body;
         // Verificar se usuário já existe
-        const existingResult = await (0, database_1.query)('SELECT id FROM users WHERE email = ?', [email.toLowerCase()]);
+        const existingResult = await (0, database_1.query)('SELECT id FROM users WHERE email = $1', [email.toLowerCase()]);
         if (existingResult.rows && existingResult.rows.length > 0) {
             return res.status(400).json({
                 error: 'Email já está em uso'
@@ -81,7 +81,7 @@ const register = async (req, res) => {
         const hashedPassword = await bcryptjs_1.default.hash(password, 10);
         const userId = (0, uuid_1.v4)();
         // Criar usuário no banco
-        await (0, database_1.query)('INSERT INTO users (id, email, password, name, role, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [userId, email.toLowerCase(), hashedPassword, name, role, 'active', new Date().toISOString(), new Date().toISOString()]);
+        await (0, database_1.query)('INSERT INTO users (id, email, password, name, role, status, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)', [userId, email.toLowerCase(), hashedPassword, name, role, 'active', new Date().toISOString(), new Date().toISOString()]);
         // Gerar token
         const token = jsonwebtoken_1.default.sign({
             userId: userId,
@@ -115,7 +115,7 @@ const getProfile = async (req, res) => {
                 error: 'Usuário não autenticado'
             });
         }
-        const result = await (0, database_1.query)('SELECT id, email, name, role, status, phone, cpf, birth_date, address, avatar_url FROM users WHERE id = ?', [req.user.id]);
+        const result = await (0, database_1.query)('SELECT id, email, name, role, status, phone, cpf, birth_date, address, avatar_url FROM users WHERE id = $1', [req.user.id]);
         if (!result.rows || result.rows.length === 0) {
             return res.status(404).json({
                 error: 'Usuário não encontrado'
@@ -195,7 +195,7 @@ const changePassword = async (req, res) => {
         }
         const { current_password, new_password } = req.body;
         // Buscar usuário atual
-        const result = await (0, database_1.query)('SELECT password FROM users WHERE id = ?', [req.user.id]);
+        const result = await (0, database_1.query)('SELECT password FROM users WHERE id = $1', [req.user.id]);
         if (!result.rows || result.rows.length === 0) {
             return res.status(404).json({
                 error: 'Usuário não encontrado'
@@ -212,7 +212,7 @@ const changePassword = async (req, res) => {
         // Hash da nova senha
         const hashedNewPassword = await bcryptjs_1.default.hash(new_password, 10);
         // Atualizar senha no banco
-        await (0, database_1.query)('UPDATE users SET password = ?, updated_at = ? WHERE id = ?', [hashedNewPassword, new Date().toISOString(), req.user.id]);
+        await (0, database_1.query)('UPDATE users SET password = $1, updated_at = $2 WHERE id = $3', [hashedNewPassword, new Date().toISOString(), req.user.id]);
         res.json({
             message: 'Senha alterada com sucesso'
         });
@@ -236,24 +236,25 @@ const updateProfile = async (req, res) => {
         // Construir query dinamicamente
         const updates = [];
         const values = [];
+        let paramIndex = 1;
         if (name) {
-            updates.push('name = ?');
+            updates.push(`name = $${paramIndex++}`);
             values.push(name);
         }
         if (phone) {
-            updates.push('phone = ?');
+            updates.push(`phone = $${paramIndex++}`);
             values.push(phone);
         }
         if (cpf) {
-            updates.push('cpf = ?');
+            updates.push(`cpf = $${paramIndex++}`);
             values.push(cpf);
         }
         if (birth_date) {
-            updates.push('birth_date = ?');
+            updates.push(`birth_date = $${paramIndex++}`);
             values.push(birth_date);
         }
         if (address) {
-            updates.push('address = ?');
+            updates.push(`address = $${paramIndex++}`);
             values.push(address);
         }
         if (updates.length === 0) {
@@ -261,13 +262,13 @@ const updateProfile = async (req, res) => {
                 error: 'Nenhum campo para atualizar'
             });
         }
-        updates.push('updated_at = ?');
+        updates.push(`updated_at = $${paramIndex++}`);
         values.push(new Date().toISOString());
         values.push(req.user.id);
         // Atualizar no banco
-        await (0, database_1.query)(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`, values);
+        await (0, database_1.query)(`UPDATE users SET ${updates.join(', ')} WHERE id = $${paramIndex}`, values);
         // Buscar usuário atualizado
-        const result = await (0, database_1.query)('SELECT id, email, name, role, status, phone, cpf, birth_date, address FROM users WHERE id = ?', [req.user.id]);
+        const result = await (0, database_1.query)('SELECT id, email, name, role, status, phone, cpf, birth_date, address FROM users WHERE id = $1', [req.user.id]);
         const updatedUser = result.rows[0];
         res.json({
             message: 'Perfil atualizado com sucesso',
