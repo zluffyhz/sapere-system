@@ -7,13 +7,14 @@ import NotificationProvider from '@/context/NotificationContext';
 import ProtectedRoute, { AdminRoute, ProfissionalRoute, ClinicalRoute } from '@/components/common/ProtectedRoute';
 import Layout from '@/components/common/Layout';
 import Login from '@/pages/Login';
-import Dashboard from '@/pages/Dashboard';
-import AppointmentsCalendar from '@/pages/AppointmentsCalendar';
+import DashboardReal from '@/pages/DashboardReal';
+import PatientsReal from '@/pages/PatientsReal';
+import AppointmentsReal from '@/pages/AppointmentsReal';
+import TherapyReal from '@/pages/TherapyReal';
+import CommunicationReal from '@/pages/CommunicationReal';
+import AnamneseReal from '@/pages/AnamneseReal';
 import Therapists from '@/pages/Therapists';
 import TherapistDashboard from '@/pages/TherapistDashboard';
-import Communication from '@/pages/Communication';
-import AnamneseCompartilhada from '@/pages/AnamneseCompartilhadaFixed';
-import Patients from '@/pages/Patients';
 import Profile from '@/pages/Profile';
 import TherapySession from '@/pages/TherapySession';
 import DebugAuth from '@/pages/DebugAuth';
@@ -132,7 +133,7 @@ const AppContent: React.FC = () => {
               <Layout>
                 <Routes>
                   {/* Dashboard - todos podem acessar */}
-                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/" element={<DashboardReal />} />
                   
                   {/* Página de teste de roles - todos podem acessar */}
                   <Route path="/test-roles" element={<TestRolesPage />} />
@@ -145,7 +146,7 @@ const AppContent: React.FC = () => {
                     path="/patients" 
                     element={
                       <ClinicalRoute>
-                        <Patients />
+                        <PatientsReal />
                       </ClinicalRoute>
                     } 
                   />
@@ -154,7 +155,7 @@ const AppContent: React.FC = () => {
                     path="/appointments" 
                     element={
                       <ClinicalRoute>
-                        <AppointmentsCalendar />
+                        <AppointmentsReal />
                       </ClinicalRoute>
                     } 
                   />
@@ -163,7 +164,7 @@ const AppContent: React.FC = () => {
                     path="/calendar" 
                     element={
                       <ClinicalRoute>
-                        <AppointmentsCalendar />
+                        <AppointmentsReal />
                       </ClinicalRoute>
                     } 
                   />
@@ -190,7 +191,7 @@ const AppContent: React.FC = () => {
                     path="/communication" 
                     element={
                       <ClinicalRoute>
-                        <Communication />
+                        <CommunicationReal />
                       </ClinicalRoute>
                     } 
                   />
@@ -199,7 +200,7 @@ const AppContent: React.FC = () => {
                     path="/anamnese" 
                     element={
                       <ClinicalRoute>
-                        <AnamneseCompartilhada />
+                        <AnamneseReal />
                       </ClinicalRoute>
                     } 
                   />
@@ -208,7 +209,7 @@ const AppContent: React.FC = () => {
                     path="/therapy" 
                     element={
                       <ClinicalRoute>
-                        <TherapySession />
+                        <TherapyReal />
                       </ClinicalRoute>
                     } 
                   />
@@ -217,7 +218,7 @@ const AppContent: React.FC = () => {
                     path="/session/:appointmentId?" 
                     element={
                       <ClinicalRoute>
-                        <TherapySession />
+                        <TherapyReal />
                       </ClinicalRoute>
                     } 
                   />
