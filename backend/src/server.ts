@@ -1,112 +1,169 @@
+// backend/src/server.ts - VERSÃO CORRIGIDA
 import express from 'express';
-import { createServer } from 'http';
 import cors from 'cors';
 import helmet from 'helmet';
-import morgan from 'morgan';
-import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
-import syncService from './services/syncService';
-import backupService from './services/backupService';
-import { createDefaultUsers } from './scripts/createDefaultUsers';
+import authRoutes from './routes/auth.routes';
+import healthRoutes from './routes/health.routes';
 
-import authRoutes from './routes/auth';
-import protectedRoutes from './routes/protected';
-import anamneseRoutes from './routes/anamnese';
-import therapistRoutes from './routes/therapists';
-import adminRoutes from './routes/admin';
-import userManagementRoutes from './routes/userManagement';
-
+// Carregar variáveis de ambiente
 dotenv.config();
 
 const app = express();
-const server = createServer(app);
-const PORT = process.env.PORT || 3002;
+
+// IMPORTANTE: Configurar trust proxy ANTES de qualquer middleware
+app.set('trust proxy', 1);
+
+// Configuração de CORS SIMPLIFICADA E FUNCIONAL
+const allowedOrigins = [
+  'https://sapere-system.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://localhost:3000',
+  'http://localhost:3001'
+];
+
+// Se CORS_ORIGINS estiver configurado, usar ele
+if (process.env.CORS_ORIGINS) {
+  const envOrigins = process.env.CORS_ORIGINS.split(',').map(origin => origin.trim());
+  allowedOrigins.push(...envOrigins);
+}
+
+console.log('CORS Origins permitidas:', allowedOrigins);
+
+const corsOptions = {
+  origin: function (origin: string | undefined, callback: Function) {
+    // Permitir requisições sem origin (Postman, curl, etc)
+    if (!origin) {
+      return callback(null, true);
+    }
+    
+    // Verificar se a origem está na lista de permitidas
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      // Em produção, ser mais permissivo com Vercel
+      if (process.env.NODE_ENV === 'production' && origin.includes('vercel.app')) {
+        callback(null, true);
+      } else {
+        console.log('CORS bloqueado para origem:', origin);
+        callback(null, false); // Mudança importante: false ao invés de Error
+      }
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Authorization'],
+  maxAge: 86400,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
+
+// Segurança básica
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false
+}));
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100 // máximo 100 requests por IP por janela
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => {
+    return req.ip || req.socket.remoteAddress || 'unknown';
+  }
 });
 
-// Middlewares
-app.use(helmet());
-app.use(compression());
-app.use(limiter);
-app.use(morgan('combined'));
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  skipSuccessfulRequests: true,
+  standardHeaders: true,
+  legacyHeaders: false
+});
 
-app.use(cors({
-  origin: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:5173'],
-  credentials: true
-}));
+// Aplicar rate limit
+app.use('/api/', limiter);
 
-app.use(express.json({ limit: '10mb' }));
+// Middlewares para parsing
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Criar diretório de uploads se não existir
-import path from 'path';
-import fs from 'fs';
-
-const uploadDir = process.env.UPLOAD_DIR || './uploads';
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-// Servir arquivos estáticos (uploads)
-app.use('/uploads', express.static(path.resolve(uploadDir)));
+// Logging
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path} - Origin: ${req.headers.origin || 'no-origin'}`);
+  next();
+});
 
 // Rotas
+app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/protected', protectedRoutes);
-app.use('/api/anamneses', anamneseRoutes);
-app.use('/api/therapists', therapistRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/admin/users', userManagementRoutes);
 
-// Health check
-app.get('/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
-});
+// Rate limit específico para login DEPOIS das rotas
+app.use('/api/auth/login', loginLimiter);
 
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({ error: 'Rota não encontrada' });
-});
-
-// Error handler
-app.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error('Erro:', error);
-  res.status(500).json({ error: 'Erro interno do servidor' });
-});
-
-// Inicializar banco de dados e iniciar servidor
-const startServer = async () => {
-  try {
-    // Inicializar serviço de sincronização
-    syncService.initialize(server);
-    
-    // Inicializar serviço de backup
-    await backupService.initialize();
-    
-    // Modo PostgreSQL apenas
-    console.log('🔧 Sistema configurado para usar PostgreSQL exclusivamente');
-    
-    // Criar usuários padrão
-    try {
-      await createDefaultUsers();
-    } catch (error) {
-      console.warn('⚠️ Erro ao criar usuários padrão (pode já existirem):', error.message);
+// Rota base da API
+app.get('/api', (req, res) => {
+  res.json({
+    message: 'Sapere System API',
+    status: 'operational',
+    version: '1.0.0',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: '/api/health',
+      login: 'POST /api/auth/login',
+      verify: 'GET /api/auth/verify'
     }
-    
-    server.listen(PORT, () => {
-      console.log(`🚀 Servidor Sapere rodando na porta ${PORT}`);
-      console.log(`📍 Health check: http://localhost:${PORT}/health`);
-      console.log(`🔄 WebSocket para sincronização ativo`);
-    });
-  } catch (error) {
-    console.error('❌ Erro ao inicializar servidor:', error);
-    process.exit(1);
-  }
-};
+  });
+});
 
-startServer();
+// Rota raiz
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Sapere System API',
+    status: 'operational',
+    version: '1.0.0'
+  });
+});
+
+// Tratamento de rotas não encontradas
+app.use((req, res) => {
+  res.status(404).json({
+    error: 'Rota não encontrada',
+    path: req.path,
+    method: req.method
+  });
+});
+
+// Tratamento de erros
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error('Erro no servidor:', err.message);
+  
+  res.status(err.status || 500).json({
+    error: err.message || 'Erro interno do servidor',
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+  });
+});
+
+// Iniciar servidor
+const PORT = process.env.PORT || 3333;
+
+app.listen(PORT, () => {
+  console.log(`
+╔════════════════════════════════════════╗
+║     Sapere System API - Produção      ║
+╠════════════════════════════════════════╣
+║ 🚀 Servidor rodando na porta: ${PORT}    ║
+║ 🔧 Ambiente: ${process.env.NODE_ENV || 'development'}          ║
+║ 🔒 Trust Proxy: Ativado                ║
+║ 🌐 CORS configurado para ${allowedOrigins.length} origins    ║
+╚════════════════════════════════════════╝
+  `);
+});
+
+export default app;
