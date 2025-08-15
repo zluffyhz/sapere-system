@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 interface DefaultUser {
   id: string;
   email: string;
+  username?: string;
   password: string;
   name: string;
   role: string;
@@ -15,6 +16,7 @@ const defaultUsers: DefaultUser[] = [
   {
     id: '1',
     email: 'admin@sapere.com.br',
+    username: 'admin',
     password: 'Sapere@2025',  // ⚠️ ALTERE ESTA SENHA EM PRODUÇÃO
     name: 'Administrador Sapere',
     role: 'admin',
@@ -67,10 +69,11 @@ export async function createDefaultUsers() {
       
       // Criar usuário
       await query(
-        'INSERT INTO users (id, email, password, name, role, status, phone, created_at, updated_at, created_by) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)',
+        'INSERT INTO users (id, email, username, password, name, role, status, phone, created_at, updated_at, created_by) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
         [
           user.id, 
           user.email.toLowerCase(), 
+          user.username?.toLowerCase() || null,
           hashedPassword, 
           user.name, 
           user.role, 

@@ -10,6 +10,7 @@ const defaultUsers = [
     {
         id: '1',
         email: 'admin@sapere.com.br',
+        username: 'admin',
         password: 'Sapere@2025', // ⚠️ ALTERE ESTA SENHA EM PRODUÇÃO
         name: 'Administrador Sapere',
         role: 'admin',
@@ -53,9 +54,10 @@ async function createDefaultUsers() {
             // Hash da senha
             const hashedPassword = await bcryptjs_1.default.hash(user.password, 10);
             // Criar usuário
-            await (0, database_1.query)('INSERT INTO users (id, email, password, name, role, status, phone, created_at, updated_at, created_by) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', [
+            await (0, database_1.query)('INSERT INTO users (id, email, username, password, name, role, status, phone, created_at, updated_at, created_by) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)', [
                 user.id,
                 user.email.toLowerCase(),
+                user.username?.toLowerCase() || null,
                 hashedPassword,
                 user.name,
                 user.role,

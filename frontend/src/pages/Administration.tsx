@@ -3,12 +3,14 @@ import { AuthContext } from '@/context/AuthContext';
 import { adminAPI } from '@/services/api';
 import Layout from '@/components/common/Layout';
 import CreateTherapistModal from '@/components/admin/CreateTherapistModal';
+import CreateUserModal from '@/components/admin/CreateUserModal';
 import UserManagementTable from '@/components/admin/UserManagementTable';
 
 const Administration: React.FC = () => {
   const { user } = useContext(AuthContext);
   const [activeTab, setActiveTab] = useState<'users' | 'therapists' | 'settings'>('users');
   const [showCreateTherapist, setShowCreateTherapist] = useState(false);
+  const [showCreateUser, setShowCreateUser] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [changePasswordModal, setChangePasswordModal] = useState({
     isOpen: false,
@@ -34,6 +36,10 @@ const Administration: React.FC = () => {
   }
 
   const handleCreateTherapistSuccess = () => {
+    setRefreshTrigger(prev => prev + 1);
+  };
+
+  const handleCreateUserSuccess = () => {
     setRefreshTrigger(prev => prev + 1);
   };
 
@@ -114,11 +120,19 @@ const Administration: React.FC = () => {
         {/* Tab Content */}
         {activeTab === 'users' && (
           <div>
-            <div className="mb-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Usuários do Sistema</h2>
-              <p className="text-gray-600 mb-4">
-                Gerencie todos os usuários, altere status e resete senhas quando necessário.
-              </p>
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">Usuários do Sistema</h2>
+                <p className="text-gray-600 mt-1">
+                  Gerencie todos os usuários, altere status e resete senhas quando necessário.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowCreateUser(true)}
+                className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
+              >
+                + Criar Usuário
+              </button>
             </div>
             <UserManagementTable refreshTrigger={refreshTrigger} />
           </div>
@@ -299,6 +313,13 @@ const Administration: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Create User Modal */}
+      <CreateUserModal
+        isOpen={showCreateUser}
+        onClose={() => setShowCreateUser(false)}
+        onSuccess={handleCreateUserSuccess}
+      />
     </Layout>
   );
 };

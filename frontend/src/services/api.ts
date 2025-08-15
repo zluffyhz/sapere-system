@@ -152,7 +152,7 @@ api.interceptors.response.use(
 // Auth API
 export const authAPI = {
   login: async (loginField: string, password: string, rememberMe = false): Promise<AuthResponse> => {
-    const response = await api.post('/api/auth/login', { 
+    const response = await api.post('/auth/login', { 
       email: loginField,  // Backend espera "email" e "password"
       password, 
       remember_me: rememberMe 
@@ -161,7 +161,7 @@ export const authAPI = {
   },
 
   register: async (email: string, password: string, name: string, role: UserRole = 'profissional'): Promise<AuthResponse> => {
-    const response = await api.post('/api/auth/register', { 
+    const response = await api.post('/auth/register', { 
       email, 
       password, 
       name, 
@@ -171,26 +171,26 @@ export const authAPI = {
   },
 
   refreshToken: async (): Promise<AuthResponse> => {
-    const response = await api.post('/api/auth/refresh');
+    const response = await api.post('/auth/refresh');
     return response.data;
   },
 
   logout: async (): Promise<void> => {
-    await api.post('/api/auth/logout');
+    await api.post('/auth/logout');
   },
 
   getProfile: async (): Promise<{ user: User; therapist_info?: any }> => {
-    const response = await api.get('/api/auth/profile');
+    const response = await api.get('/auth/profile');
     return response.data;
   },
 
   updateProfile: async (data: Partial<User>): Promise<{ message: string; user: User }> => {
-    const response = await api.put('/api/auth/profile', data);
+    const response = await api.put('/auth/profile', data);
     return response.data;
   },
 
   changePassword: async (currentPassword: string, newPassword: string): Promise<{ message: string }> => {
-    const response = await api.put('/api/auth/change-password', {
+    const response = await api.put('/auth/change-password', {
       current_password: currentPassword,
       new_password: newPassword,
       confirm_password: newPassword
@@ -199,7 +199,7 @@ export const authAPI = {
   },
 
   verifyToken: async (): Promise<{ valid: boolean; user: User }> => {
-    const response = await api.get('/api/auth/verify');
+    const response = await api.get('/auth/verify');
     return response.data;
   }
 };
@@ -208,30 +208,30 @@ export const authAPI = {
 export const protectedAPI = {
   // Dashboard
   getDashboard: async (): Promise<any> => {
-    const response = await api.get('/api/protected/dashboard');
+    const response = await api.get('/protected/dashboard');
     return response.data;
   },
 
   // Testes de roles
   testRoles: async (): Promise<any> => {
-    const response = await api.get('/api/protected/test/roles');
+    const response = await api.get('/protected/test/roles');
     return response.data;
   },
 
   // Admin endpoints
   admin: {
     getUsers: async (): Promise<any> => {
-      const response = await api.get('/api/protected/admin/users');
+      const response = await api.get('/protected/admin/users');
       return response.data;
     },
     
     createUser: async (userData: any): Promise<any> => {
-      const response = await api.post('/api/protected/admin/users', userData);
+      const response = await api.post('/protected/admin/users', userData);
       return response.data;
     },
     
     deleteUser: async (userId: string): Promise<any> => {
-      const response = await api.delete(`/api/protected/admin/users/${userId}`);
+      const response = await api.delete(`/protected/admin/users/${userId}`);
       return response.data;
     }
   },
@@ -239,12 +239,12 @@ export const protectedAPI = {
   // Professional endpoints
   professional: {
     getSchedule: async (): Promise<any> => {
-      const response = await api.get('/api/protected/professional/schedule');
+      const response = await api.get('/protected/professional/schedule');
       return response.data;
     },
     
     createRecord: async (recordData: any): Promise<any> => {
-      const response = await api.post('/api/protected/professional/records', recordData);
+      const response = await api.post('/protected/professional/records', recordData);
       return response.data;
     }
   },
@@ -252,12 +252,12 @@ export const protectedAPI = {
   // Clinical endpoints (professional or admin)
   clinical: {
     getPatients: async (): Promise<any> => {
-      const response = await api.get('/api/protected/clinical/patients');
+      const response = await api.get('/protected/clinical/patients');
       return response.data;
     },
     
     createAppointment: async (appointmentData: any): Promise<any> => {
-      const response = await api.post('/api/protected/clinical/appointments', appointmentData);
+      const response = await api.post('/protected/clinical/appointments', appointmentData);
       return response.data;
     }
   },
@@ -265,17 +265,17 @@ export const protectedAPI = {
   // Patient-specific endpoints
   patients: {
     getPatient: async (patientId: string): Promise<any> => {
-      const response = await api.get(`/api/protected/patients/${patientId}`);
+      const response = await api.get(`/protected/patients/${patientId}`);
       return response.data;
     },
     
     getPatientRecords: async (patientId: string): Promise<any> => {
-      const response = await api.get(`/api/protected/patients/${patientId}/records`);
+      const response = await api.get(`/protected/patients/${patientId}/records`);
       return response.data;
     },
     
     getPatientAppointments: async (patientId: string): Promise<any> => {
-      const response = await api.get(`/api/protected/patients/${patientId}/appointments`);
+      const response = await api.get(`/protected/patients/${patientId}/appointments`);
       return response.data;
     }
   }
@@ -297,37 +297,37 @@ export const recordsAPI = {
       offset?: number;
     }
   ): Promise<any> => {
-    const response = await api.get(`/api/records/patient/${patientId}`, { params });
+    const response = await api.get(`/records/patient/${patientId}`, { params });
     return response.data;
   },
 
   // Buscar registro específico
   getRecord: async (recordId: string): Promise<any> => {
-    const response = await api.get(`/api/records/${recordId}`);
+    const response = await api.get(`/records/${recordId}`);
     return response.data;
   },
 
   // Criar novo registro
   createRecord: async (recordData: any): Promise<any> => {
-    const response = await api.post('/api/records', recordData);
+    const response = await api.post('/records', recordData);
     return response.data;
   },
 
   // Atualizar registro
   updateRecord: async (recordId: string, recordData: any): Promise<any> => {
-    const response = await api.put(`/api/records/${recordId}`, recordData);
+    const response = await api.put(`/records/${recordId}`, recordData);
     return response.data;
   },
 
   // Excluir registro
   deleteRecord: async (recordId: string): Promise<any> => {
-    const response = await api.delete(`/api/records/${recordId}`);
+    const response = await api.delete(`/records/${recordId}`);
     return response.data;
   },
 
   // Buscar templates
   getTemplates: async (params?: { category?: string; specialty?: string }): Promise<any> => {
-    const response = await api.get('/api/records/templates', { params });
+    const response = await api.get('/records/templates', { params });
     return response.data;
   }
 };
@@ -341,7 +341,7 @@ export const uploadAPI = {
       formData.append('attachments', file);
     });
 
-    const response = await api.post('/api/upload/record-attachments', formData, {
+    const response = await api.post('/upload/record-attachments', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -357,7 +357,7 @@ export const uploadAPI = {
 
   // Excluir arquivo
   deleteFile: async (filename: string): Promise<any> => {
-    const response = await api.delete(`/api/upload/file/${filename}`);
+    const response = await api.delete(`/upload/file/${filename}`);
     return response.data;
   }
 };
@@ -372,37 +372,37 @@ export const anamneseAPI = {
     page?: number;
     limit?: number;
   }): Promise<any> => {
-    const response = await api.get('/api/anamneses', { params });
+    const response = await api.get('/anamneses', { params });
     return response.data;
   },
 
   // Buscar anamnese por ID
   get: async (id: string): Promise<any> => {
-    const response = await api.get(`/api/anamneses/${id}`);
+    const response = await api.get(`/anamneses/${id}`);
     return response.data;
   },
 
   // Criar anamnese
   create: async (data: any): Promise<any> => {
-    const response = await api.post('/api/anamneses', data);
+    const response = await api.post('/anamneses', data);
     return response.data;
   },
 
   // Atualizar anamnese
   update: async (id: string, data: any): Promise<any> => {
-    const response = await api.put(`/api/anamneses/${id}`, data);
+    const response = await api.put(`/anamneses/${id}`, data);
     return response.data;
   },
 
   // Excluir anamnese
   delete: async (id: string): Promise<any> => {
-    const response = await api.delete(`/api/anamneses/${id}`);
+    const response = await api.delete(`/anamneses/${id}`);
     return response.data;
   },
 
   // Obter estatísticas
   getStats: async (): Promise<any> => {
-    const response = await api.get('/api/anamneses/stats');
+    const response = await api.get('/anamneses/stats');
     return response.data;
   }
 };
@@ -425,7 +425,7 @@ export const adminAPI = {
       if (params?.status) query.append('status', params.status);
       if (params?.search) query.append('search', params.search);
       
-      const response = await api.get(`/api/admin/users?${query.toString()}`);
+      const response = await api.get(`/admin/users?${query.toString()}`);
       return response.data;
     },
 
@@ -437,7 +437,7 @@ export const adminAPI = {
       role?: 'admin' | 'therapist' | 'responsible';
       phone?: string;
     }): Promise<any> => {
-      const response = await api.post('/api/admin/users', userData);
+      const response = await api.post('/admin/users', userData);
       return response.data;
     },
 
@@ -449,27 +449,27 @@ export const adminAPI = {
       email?: string;
       username?: string;
     }): Promise<any> => {
-      const response = await api.put(`/api/admin/users/${userId}`, userData);
+      const response = await api.put(`/admin/users/${userId}`, userData);
       return response.data;
     },
     
     updateStatus: async (userId: string, status: string): Promise<any> => {
-      const response = await api.put(`/api/admin/users/${userId}`, { status });
+      const response = await api.put(`/admin/users/${userId}`, { status });
       return response.data;
     },
     
     resetPassword: async (userId: string, newPassword: string): Promise<any> => {
-      const response = await api.post(`/api/admin/users/${userId}/reset-password`, { new_password: newPassword });
+      const response = await api.post(`/admin/users/${userId}/reset-password`, { new_password: newPassword });
       return response.data;
     },
 
     deactivate: async (userId: string): Promise<any> => {
-      const response = await api.delete(`/api/admin/users/${userId}`);
+      const response = await api.delete(`/admin/users/${userId}`);
       return response.data;
     },
     
     changeAdminPassword: async (currentPassword: string, newPassword: string): Promise<any> => {
-      const response = await api.put('/api/admin/change-password', {
+      const response = await api.put('/admin/change-password', {
         current_password: currentPassword,
         new_password: newPassword,
         confirm_password: newPassword
@@ -481,7 +481,7 @@ export const adminAPI = {
   // Gerenciamento de terapeutas
   therapists: {
     list: async (): Promise<any> => {
-      const response = await api.get('/api/therapists');
+      const response = await api.get('/therapists');
       return response.data;
     },
     
@@ -499,17 +499,17 @@ export const adminAPI = {
       consultation_duration?: number;
       max_daily_appointments?: number;
     }): Promise<any> => {
-      const response = await api.post('/api/therapists', therapistData);
+      const response = await api.post('/therapists', therapistData);
       return response.data;
     },
     
     update: async (therapistId: string, therapistData: any): Promise<any> => {
-      const response = await api.put(`/api/therapists/${therapistId}`, therapistData);
+      const response = await api.put(`/therapists/${therapistId}`, therapistData);
       return response.data;
     },
     
     deactivate: async (therapistId: string): Promise<any> => {
-      const response = await api.delete(`/api/therapists/${therapistId}`);
+      const response = await api.delete(`/therapists/${therapistId}`);
       return response.data;
     }
   }
