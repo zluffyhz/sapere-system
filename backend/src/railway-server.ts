@@ -1,3 +1,4 @@
+// backend/src/railway-server.ts - VERSÃO CORRIGIDA
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -12,81 +13,90 @@ dotenv.config();
 const app = express();
 
 // IMPORTANTE: Configurar trust proxy ANTES de qualquer middleware
-// Isso é essencial para o Railway funcionar corretamente
 app.set('trust proxy', 1);
 
-// Configuração de CORS
+// Configuração de CORS SIMPLIFICADA E FUNCIONAL
+const allowedOrigins = [
+  'https://sapere-system.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://localhost:3000',
+  'http://localhost:3001'
+];
+
+// Se CORS_ORIGINS estiver configurado, usar ele
+if (process.env.CORS_ORIGINS) {
+  const envOrigins = process.env.CORS_ORIGINS.split(',').map(origin => origin.trim());
+  allowedOrigins.push(...envOrigins);
+}
+
+console.log('CORS Origins permitidas:', allowedOrigins);
+
 const corsOptions = {
   origin: function (origin: string | undefined, callback: Function) {
-    const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || [
-      'http://localhost:5173',
-      'https://sapere-system.vercel.app'
-    ];
+    // Permitir requisições sem origin (Postman, curl, etc)
+    if (!origin) {
+      return callback(null, true);
+    }
     
-    // Permitir requisições sem origin (ex: Postman, aplicativos mobile)
-    if (!origin || allowedOrigins.includes(origin)) {
+    // Verificar se a origem está na lista de permitidas
+    if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
-      callback(new Error('Não permitido pelo CORS'));
+      // Em produção, ser mais permissivo com Vercel
+      if (process.env.NODE_ENV === 'production' && origin.includes('vercel.app')) {
+        callback(null, true);
+      } else {
+        console.log('CORS bloqueado para origem:', origin);
+        callback(null, false); // Mudança importante: false ao invés de Error
+      }
     }
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  exposedHeaders: ['Authorization']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Authorization'],
+  maxAge: 86400,
+  optionsSuccessStatus: 200
 };
 
 app.use(cors(corsOptions));
 
 // Segurança básica
 app.use(helmet({
-  contentSecurityPolicy: false, // Desabilitar CSP em API
+  contentSecurityPolicy: false,
   crossOriginEmbedderPolicy: false
 }));
 
-// Configuração de Rate Limiting
+// Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // limite de 100 requisições por IP
-  message: 'Muitas requisições deste IP, tente novamente em 15 minutos.',
+  windowMs: 15 * 60 * 1000,
+  max: 100,
   standardHeaders: true,
   legacyHeaders: false,
-  // IMPORTANTE: configurações para funcionar atrás de proxy
-  skipSuccessfulRequests: false,
   keyGenerator: (req) => {
-    // Usar o IP real quando atrás de proxy
     return req.ip || req.socket.remoteAddress || 'unknown';
-  },
-  handler: (req, res) => {
-    res.status(429).json({
-      error: 'Muitas requisições. Aguarde 15 minutos.'
-    });
   }
 });
 
-// Rate limit mais restritivo para login
 const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 5, // apenas 5 tentativas de login
-  message: 'Muitas tentativas de login. Aguarde 15 minutos.',
-  skipSuccessfulRequests: true, // não contar logins bem-sucedidos
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  skipSuccessfulRequests: true,
   standardHeaders: true,
   legacyHeaders: false
 });
 
-// Aplicar rate limit geral
+// Aplicar rate limit
 app.use('/api/', limiter);
 
 // Middlewares para parsing
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Logging simples para debug
+// Logging
 app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
-  if (req.method === 'POST' && req.path === '/api/auth/login') {
-    console.log('Login attempt from IP:', req.ip);
-  }
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path} - Origin: ${req.headers.origin || 'no-origin'}`);
   next();
 });
 
@@ -94,19 +104,30 @@ app.use((req, res, next) => {
 app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
 
-// Aplicar rate limit específico para login
+// Rate limit específico para login DEPOIS das rotas
 app.use('/api/auth/login', loginLimiter);
+
+// Rota base da API
+app.get('/api', (req, res) => {
+  res.json({
+    message: 'Sapere System API',
+    status: 'operational',
+    version: '1.0.0',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: '/api/health',
+      login: 'POST /api/auth/login',
+      verify: 'GET /api/auth/verify'
+    }
+  });
+});
 
 // Rota raiz
 app.get('/', (req, res) => {
   res.json({
     message: 'Sapere System API',
     status: 'operational',
-    version: '1.0.0',
-    endpoints: {
-      health: '/api/health',
-      login: '/api/auth/login'
-    }
+    version: '1.0.0'
   });
 });
 
@@ -119,13 +140,9 @@ app.use((req, res) => {
   });
 });
 
-// Tratamento de erros global
+// Tratamento de erros
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error('Erro:', err);
-  
-  if (err.message === 'Não permitido pelo CORS') {
-    return res.status(403).json({ error: 'CORS: Origem não permitida' });
-  }
+  console.error('Erro no servidor:', err.message);
   
   res.status(err.status || 500).json({
     error: err.message || 'Erro interno do servidor',
@@ -144,14 +161,8 @@ app.listen(PORT, () => {
 ║ 🚀 Servidor rodando na porta: ${PORT}    ║
 ║ 🔧 Ambiente: ${process.env.NODE_ENV || 'development'}          ║
 ║ 🔒 Trust Proxy: Ativado                ║
-║ 🌐 CORS Origins:                       ║`);
-  
-  const origins = process.env.CORS_ORIGINS?.split(',') || [];
-  origins.forEach(origin => {
-    console.log(`║    - ${origin.padEnd(33)} ║`);
-  });
-  
-  console.log(`╚════════════════════════════════════════╝
+║ 🌐 CORS configurado para ${allowedOrigins.length} origins    ║
+╚════════════════════════════════════════╝
   `);
 });
 
