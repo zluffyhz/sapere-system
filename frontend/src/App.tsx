@@ -12,7 +12,7 @@ import PatientsReal from '@/pages/PatientsReal';
 import AppointmentsReal from '@/pages/AppointmentsReal';
 import TherapyReal from '@/pages/TherapyReal';
 import CommunicationReal from '@/pages/CommunicationReal';
-import AnamneseReal from '@/pages/AnamneseReal';
+import AnamneseUpload from '@/pages/AnamneseUpload';
 import Therapists from '@/pages/Therapists';
 import TherapistDashboard from '@/pages/TherapistDashboard';
 import Profile from '@/pages/Profile';
@@ -200,7 +200,7 @@ const AppContent: React.FC = () => {
                     path="/anamnese" 
                     element={
                       <ClinicalRoute>
-                        <AnamneseReal />
+                        <AnamneseUpload />
                       </ClinicalRoute>
                     } 
                   />

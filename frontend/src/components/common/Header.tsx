@@ -87,38 +87,36 @@ const Header: React.FC = () => {
                 Dashboard
               </Link>
               
-              <ConditionalRender roles={['admin', 'profissional', 'therapist']}>
-                <Link
-                  to="/patients"
-                  className="px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 transition-colors"
-                >
-                  Pacientes
-                </Link>
-                <Link
-                  to="/appointments"
-                  className="px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 transition-colors"
-                >
-                  Agendamentos
-                </Link>
-                <Link
-                  to="/therapy"
-                  className="px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 transition-colors bg-sapere-orange/10 border border-sapere-orange/30 rounded-lg"
-                >
-                  🎯 Iniciar Terapia
-                </Link>
-                <Link
-                  to="/communication"
-                  className="px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 transition-colors"
-                >
-                  Comunicação
-                </Link>
-                <Link
-                  to="/anamnese"
-                  className="px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 transition-colors"
-                >
-                  Anamneses
-                </Link>
-              </ConditionalRender>
+              <Link
+                to="/patients"
+                className="px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 transition-colors"
+              >
+                Pacientes
+              </Link>
+              <Link
+                to="/appointments"
+                className="px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 transition-colors"
+              >
+                Agendamentos
+              </Link>
+              <Link
+                to="/therapy"
+                className="px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 transition-colors bg-sapere-orange/10 border border-sapere-orange/30 rounded-lg"
+              >
+                🎯 Terapia
+              </Link>
+              <Link
+                to="/communication"
+                className="px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 transition-colors"
+              >
+                Comunicação
+              </Link>
+              <Link
+                to="/anamnese"
+                className="px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 transition-colors"
+              >
+                Anamneses
+              </Link>
 
               <ConditionalRender roles={['admin']}>
                 <Link
@@ -261,36 +259,41 @@ const Header: React.FC = () => {
                 Dashboard
               </Link>
               
-              <ConditionalRender roles={['admin', 'profissional']}>
-                <Link
-                  to="/patients"
-                  className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Pacientes
-                </Link>
-                <Link
-                  to="/appointments"
-                  className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Agendamentos
-                </Link>
-                <Link
-                  to="/communication"
-                  className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Comunicação
-                </Link>
-                <Link
-                  to="/anamnese"
-                  className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Anamneses
-                </Link>
-              </ConditionalRender>
+              <Link
+                to="/patients"
+                className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Pacientes
+              </Link>
+              <Link
+                to="/appointments"
+                className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Agendamentos
+              </Link>
+              <Link
+                to="/therapy"
+                className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                🎯 Terapia
+              </Link>
+              <Link
+                to="/communication"
+                className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Comunicação
+              </Link>
+              <Link
+                to="/anamnese"
+                className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Anamneses
+              </Link>
 
               <ConditionalRender roles={['admin']}>
                 <Link
