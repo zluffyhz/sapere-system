@@ -49,8 +49,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     sessionStorage.removeItem(STORAGE_KEYS.TOKEN);
     sessionStorage.removeItem(STORAGE_KEYS.USER);
     
-    // Desconectar do serviço de sincronização
-    syncService.disconnect();
+    // Desconectar do serviço de sincronização - TEMPORARIAMENTE DESABILITADO
+    // syncService.disconnect();
   }, []);
 
   // Função para salvar dados da sessão
@@ -71,8 +71,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const expiry = new Date(Date.now() + expiryHours * 60 * 60 * 1000).getTime();
     localStorage.setItem(STORAGE_KEYS.TOKEN_EXPIRY, expiry.toString());
 
-    // Conectar ao serviço de sincronização
-    syncService.connect(authToken);
+    // Conectar ao serviço de sincronização - TEMPORARIAMENTE DESABILITADO
+    // syncService.connect(authToken);
   }, []);
 
   // Verificar se o token está expirado
@@ -197,8 +197,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setToken(storedToken);
           setUser(userData);
           
-          // Conectar ao serviço de sincronização
-          syncService.connect(storedToken);
+          // Conectar ao serviço de sincronização - TEMPORARIAMENTE DESABILITADO
+          // syncService.connect(storedToken);
           
           // Tentar verificar o token em background
           try {
