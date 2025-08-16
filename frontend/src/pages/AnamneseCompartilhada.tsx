@@ -77,34 +77,34 @@ const AnamneseCompartilhada: React.FC = () => {
     loadTemplates();
     loadProfessionalsAndPatients();
 
-    // Configurar sincronização em tempo real
-    const unsubscribe = syncService.subscribe('anamnese', (event) => {
-      console.log('📡 Evento de anamnese recebido:', event);
-      
-      // Recarregar dados quando houver mudanças
-      if (event.userId !== user?.id) {
-        switch (event.type) {
-          case 'create':
-            success(`Nova anamnese criada por outro usuário: ${event.data.titulo}`);
-            loadAnamneses();
-            loadStats();
-            break;
-          case 'update':
-            success(`Anamnese atualizada por outro usuário`);
-            loadAnamneses();
-            break;
-          case 'delete':
-            success(`Anamnese excluída por outro usuário`);
-            loadAnamneses();
-            loadStats();
-            break;
-        }
-      }
-    });
+    // Configurar sincronização em tempo real - TEMPORARIAMENTE DESABILITADO
+    // const unsubscribe = syncService.subscribe('anamnese', (event) => {
+    //   console.log('📡 Evento de anamnese recebido:', event);
+    //   
+    //   // Recarregar dados quando houver mudanças
+    //   if (event.userId !== user?.id) {
+    //     switch (event.type) {
+    //       case 'create':
+    //         success(`Nova anamnese criada por outro usuário: ${event.data.titulo}`);
+    //         loadAnamneses();
+    //         loadStats();
+    //         break;
+    //       case 'update':
+    //         success(`Anamnese atualizada por outro usuário`);
+    //         loadAnamneses();
+    //         break;
+    //       case 'delete':
+    //         success(`Anamnese excluída por outro usuário`);
+    //         loadAnamneses();
+    //         loadStats();
+    //         break;
+    //     }
+    //   }
+    // });
 
-    return () => {
-      unsubscribe();
-    };
+    // return () => {
+    //   unsubscribe();
+    // };
   }, [filters, searchTerm, currentPage, user?.id]);
 
   const loadAnamneses = async () => {
