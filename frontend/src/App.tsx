@@ -19,6 +19,7 @@ import Profile from '@/pages/Profile';
 import TherapySession from '@/pages/TherapySession';
 import DebugAuth from '@/pages/DebugAuth';
 import Administration from '@/pages/Administration';
+import NavigationTest from '@/pages/NavigationTest';
 
 // Páginas de teste para demonstrar funcionalidades por role
 const TestRolesPage: React.FC = () => {
@@ -140,6 +141,9 @@ const AppContent: React.FC = () => {
                   
                   {/* Debug de autenticação */}
                   <Route path="/debug-auth" element={<DebugAuth />} />
+                  
+                  {/* Teste de navegação */}
+                  <Route path="/nav-test" element={<NavigationTest />} />
                   
                   {/* Páginas que serão implementadas */}
                   <Route 

@@ -85,6 +85,13 @@ const HeaderSimple: React.FC = () => {
             >
               Admin
             </button>
+            
+            <button
+              onClick={() => handleNavigation('/nav-test')}
+              className="px-3 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded"
+            >
+              🔧 Teste
+            </button>
           </nav>
 
           {/* User Info */}
