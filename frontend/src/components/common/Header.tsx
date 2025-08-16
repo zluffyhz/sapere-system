@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   Bell, 
   ChevronDown, 
@@ -17,6 +17,7 @@ import { useAuth } from '@/context/AuthContext';
 
 const Header: React.FC = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -79,56 +80,56 @@ const Header: React.FC = () => {
 
             {/* Navegação Desktop */}
             <nav className="hidden md:flex space-x-1">
-              <Link
-                to="/"
+              <button
+                onClick={() => navigate('/')}
                 className="px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 transition-colors"
               >
                 Dashboard
-              </Link>
+              </button>
               
-              <Link
-                to="/patients"
+              <button
+                onClick={() => navigate('/patients')}
                 className="px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 transition-colors"
               >
                 Pacientes
-              </Link>
-              <Link
-                to="/appointments"
+              </button>
+              <button
+                onClick={() => navigate('/appointments')}
                 className="px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 transition-colors"
               >
                 Agendamentos
-              </Link>
-              <Link
-                to="/therapy"
+              </button>
+              <button
+                onClick={() => navigate('/therapy')}
                 className="px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 transition-colors bg-sapere-orange/10 border border-sapere-orange/30 rounded-lg"
               >
                 🎯 Terapia
-              </Link>
-              <Link
-                to="/communication"
+              </button>
+              <button
+                onClick={() => navigate('/communication')}
                 className="px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 transition-colors"
               >
                 Comunicação
-              </Link>
-              <Link
-                to="/anamnese"
+              </button>
+              <button
+                onClick={() => navigate('/anamnese')}
                 className="px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 transition-colors"
               >
                 Anamneses
-              </Link>
+              </button>
 
-              <Link
-                to="/therapists"
+              <button
+                onClick={() => navigate('/therapists')}
                 className="px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 transition-colors"
               >
                 Terapeutas
-              </Link>
-              <Link
-                to="/administration"
+              </button>
+              <button
+                onClick={() => navigate('/administration')}
                 className="px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 transition-colors"
               >
                 Administração
-              </Link>
+              </button>
 
             </nav>
           </div>
@@ -210,22 +211,20 @@ const Header: React.FC = () => {
 
                     {/* Menu Items */}
                     <div className="py-1">
-                      <Link
-                        to="/profile"
-                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        onClick={() => setIsUserMenuOpen(false)}
+                      <button
+                        onClick={() => {navigate('/profile'); setIsUserMenuOpen(false);}}
+                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 text-left"
                       >
                         <User className="h-4 w-4 mr-3" />
                         Meu Perfil
-                      </Link>
-                      <Link
-                        to="/settings"
-                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        onClick={() => setIsUserMenuOpen(false)}
+                      </button>
+                      <button
+                        onClick={() => {navigate('/administration'); setIsUserMenuOpen(false);}}
+                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 text-left"
                       >
                         <Settings className="h-4 w-4 mr-3" />
-                        Configurações
-                      </Link>
+                        Administração
+                      </button>
                     </div>
 
                     <div className="border-t border-gray-100">
@@ -248,64 +247,56 @@ const Header: React.FC = () => {
         {isMobileMenuOpen && (
           <div className="md:hidden border-t border-sapere-orange/20 mt-2 pt-4 pb-4">
             <nav className="space-y-2">
-              <Link
-                to="/"
-                className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20"
-                onClick={() => setIsMobileMenuOpen(false)}
+              <button
+                onClick={() => {navigate('/'); setIsMobileMenuOpen(false);}}
+                className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 w-full text-left"
               >
                 Dashboard
-              </Link>
+              </button>
               
-              <Link
-                to="/patients"
-                className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20"
-                onClick={() => setIsMobileMenuOpen(false)}
+              <button
+                onClick={() => {navigate('/patients'); setIsMobileMenuOpen(false);}}
+                className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 w-full text-left"
               >
                 Pacientes
-              </Link>
-              <Link
-                to="/appointments"
-                className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20"
-                onClick={() => setIsMobileMenuOpen(false)}
+              </button>
+              <button
+                onClick={() => {navigate('/appointments'); setIsMobileMenuOpen(false);}}
+                className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 w-full text-left"
               >
                 Agendamentos
-              </Link>
-              <Link
-                to="/therapy"
-                className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20"
-                onClick={() => setIsMobileMenuOpen(false)}
+              </button>
+              <button
+                onClick={() => {navigate('/therapy'); setIsMobileMenuOpen(false);}}
+                className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 w-full text-left"
               >
                 🎯 Terapia
-              </Link>
-              <Link
-                to="/communication"
-                className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20"
-                onClick={() => setIsMobileMenuOpen(false)}
+              </button>
+              <button
+                onClick={() => {navigate('/communication'); setIsMobileMenuOpen(false);}}
+                className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 w-full text-left"
               >
                 Comunicação
-              </Link>
-              <Link
-                to="/anamnese"
-                className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20"
-                onClick={() => setIsMobileMenuOpen(false)}
+              </button>
+              <button
+                onClick={() => {navigate('/anamnese'); setIsMobileMenuOpen(false);}}
+                className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 w-full text-left"
               >
                 Anamneses
-              </Link>
+              </button>
 
-              <Link
-                to="/therapists"
-                className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20"
-                onClick={() => setIsMobileMenuOpen(false)}
+              <button
+                onClick={() => {navigate('/therapists'); setIsMobileMenuOpen(false);}}
+                className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 w-full text-left"
               >
                 Terapeutas
-              </Link>
-              <Link
-                to="/administration"
-                className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20"
-                onClick={() => setIsMobileMenuOpen(false)}
+              </button>
+              <button
+                onClick={() => {navigate('/administration'); setIsMobileMenuOpen(false);}}
+                className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 w-full text-left"
               >
                 Administração
-              </Link>
+              </button>
 
 
               {/* Mobile Contacts */}
