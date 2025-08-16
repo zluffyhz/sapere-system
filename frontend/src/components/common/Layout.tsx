@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import HeaderSimple from './HeaderSimple';
+import Header from './Header';
 
 interface LayoutProps {
   children: ReactNode;
@@ -8,9 +8,9 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-sapere-gray">
       {/* Header Principal */}
-      <HeaderSimple />
+      <Header />
       
       {/* Conteúdo Principal */}
       <main className="pt-4">

@@ -159,7 +159,7 @@ const Header: React.FC = () => {
               </a>
             </div>
 
-            {/* Notificações */}
+            {/* Notificações - Funciona sem WebSocket */}
             <NotificationsDropdown />
 
             {/* Menu do Usuário */}
