@@ -15,7 +15,11 @@ import {
 import NotificationsDropdown from './NotificationsDropdown';
 import { useAuth } from '@/context/AuthContext';
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  onToggleSidebar?: () => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -59,10 +63,16 @@ const Header: React.FC = () => {
           <div className="flex items-center space-x-4">
             {/* Mobile Menu Button */}
             <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 rounded-md text-sapere-brown hover:bg-sapere-orange/20 transition-colors"
+              onClick={() => {
+                if (onToggleSidebar) {
+                  onToggleSidebar();
+                } else {
+                  setIsMobileMenuOpen(!isMobileMenuOpen);
+                }
+              }}
+              className="lg:hidden p-2 rounded-md text-sapere-brown hover:bg-sapere-orange/20 transition-colors"
             >
-              {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              <Menu className="h-5 w-5" />
             </button>
 
             {/* Logo */}
@@ -78,60 +88,6 @@ const Header: React.FC = () => {
               </div>
             </Link>
 
-            {/* Navegação Desktop */}
-            <nav className="hidden md:flex space-x-1">
-              <button
-                onClick={() => navigate('/')}
-                className="px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 transition-colors"
-              >
-                Dashboard
-              </button>
-              
-              <button
-                onClick={() => navigate('/patients')}
-                className="px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 transition-colors"
-              >
-                Pacientes
-              </button>
-              <button
-                onClick={() => navigate('/appointments')}
-                className="px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 transition-colors"
-              >
-                Agendamentos
-              </button>
-              <button
-                onClick={() => navigate('/therapy')}
-                className="px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 transition-colors bg-sapere-orange/10 border border-sapere-orange/30 rounded-lg"
-              >
-                🎯 Terapia
-              </button>
-              <button
-                onClick={() => navigate('/communication')}
-                className="px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 transition-colors"
-              >
-                Comunicação
-              </button>
-              <button
-                onClick={() => navigate('/anamnese')}
-                className="px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 transition-colors"
-              >
-                Anamneses
-              </button>
-
-              <button
-                onClick={() => navigate('/therapists')}
-                className="px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 transition-colors"
-              >
-                Terapeutas
-              </button>
-              <button
-                onClick={() => navigate('/administration')}
-                className="px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 transition-colors"
-              >
-                Administração
-              </button>
-
-            </nav>
           </div>
 
           {/* Área Direita - Notificações e Usuário */}
@@ -243,84 +199,6 @@ const Header: React.FC = () => {
           </div>
         </div>
 
-        {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden border-t border-sapere-orange/20 mt-2 pt-4 pb-4">
-            <nav className="space-y-2">
-              <button
-                onClick={() => {navigate('/'); setIsMobileMenuOpen(false);}}
-                className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 w-full text-left"
-              >
-                Dashboard
-              </button>
-              
-              <button
-                onClick={() => {navigate('/patients'); setIsMobileMenuOpen(false);}}
-                className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 w-full text-left"
-              >
-                Pacientes
-              </button>
-              <button
-                onClick={() => {navigate('/appointments'); setIsMobileMenuOpen(false);}}
-                className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 w-full text-left"
-              >
-                Agendamentos
-              </button>
-              <button
-                onClick={() => {navigate('/therapy'); setIsMobileMenuOpen(false);}}
-                className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 w-full text-left"
-              >
-                🎯 Terapia
-              </button>
-              <button
-                onClick={() => {navigate('/communication'); setIsMobileMenuOpen(false);}}
-                className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 w-full text-left"
-              >
-                Comunicação
-              </button>
-              <button
-                onClick={() => {navigate('/anamnese'); setIsMobileMenuOpen(false);}}
-                className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 w-full text-left"
-              >
-                Anamneses
-              </button>
-
-              <button
-                onClick={() => {navigate('/therapists'); setIsMobileMenuOpen(false);}}
-                className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 w-full text-left"
-              >
-                Terapeutas
-              </button>
-              <button
-                onClick={() => {navigate('/administration'); setIsMobileMenuOpen(false);}}
-                className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 w-full text-left"
-              >
-                Administração
-              </button>
-
-
-              {/* Mobile Contacts */}
-              <div className="pt-4 border-t border-sapere-orange/20 space-y-2">
-                <a
-                  href="https://wa.me/5592992305850"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center space-x-2 px-3 py-2 bg-sapere-whatsapp text-white rounded-md text-sm font-medium"
-                >
-                  <MessageCircle className="h-4 w-4" />
-                  <span>WhatsApp: (92) 99230-5850</span>
-                </a>
-                <a
-                  href="mailto:Sapere.recepcao@gmail.com"
-                  className="flex items-center space-x-2 px-3 py-2 bg-sapere-brown text-white rounded-md text-sm font-medium"
-                >
-                  <Mail className="h-4 w-4" />
-                  <span>Sapere.recepcao@gmail.com</span>
-                </a>
-              </div>
-            </nav>
-          </div>
-        )}
       </div>
     </header>
   );

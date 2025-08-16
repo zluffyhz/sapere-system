@@ -18,6 +18,12 @@ class SyncService {
   private isConnected = false;
   
   connect(token: string) {
+    // WEBSOCKET TEMPORARIAMENTE DESABILITADO PARA CORRIGIR NAVEGAÇÃO
+    console.log('WebSocket desabilitado - sistema funcionando sem sincronização em tempo real');
+    this.isConnected = false;
+    return this;
+    
+    /*
     if (this.socket) {
       this.disconnect();
     }
@@ -35,6 +41,7 @@ class SyncService {
       reconnectionDelay: 1000
     });
 
+    /*
     this.socket.on('connect', () => {
       console.log('🔗 Conectado ao servidor de sincronização');
       this.isConnected = true;
@@ -62,15 +69,14 @@ class SyncService {
     });
 
     return this;
+    */
   }
 
   disconnect() {
-    if (this.socket) {
-      this.socket.disconnect();
-      this.socket = null;
-      this.isConnected = false;
-      console.log('🔌 Desconectado do serviço de sincronização');
-    }
+    // WebSocket desabilitado - apenas resetar estado
+    this.socket = null;
+    this.isConnected = false;
+    console.log('🔌 Serviço de sincronização desabilitado');
   }
 
   // Assinar eventos de um recurso específico
