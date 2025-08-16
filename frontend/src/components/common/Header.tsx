@@ -14,7 +14,6 @@ import {
 } from 'lucide-react';
 import NotificationsDropdown from './NotificationsDropdown';
 import { useAuth } from '@/context/AuthContext';
-import { ConditionalRender } from '@/components/common/ProtectedRoute';
 
 const Header: React.FC = () => {
   const { user, logout } = useAuth();
@@ -118,20 +117,18 @@ const Header: React.FC = () => {
                 Anamneses
               </Link>
 
-              <ConditionalRender roles={['admin']}>
-                <Link
-                  to="/therapists"
-                  className="px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 transition-colors"
-                >
-                  Terapeutas
-                </Link>
-                <Link
-                  to="/settings"
-                  className="px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 transition-colors"
-                >
-                  Configurações
-                </Link>
-              </ConditionalRender>
+              <Link
+                to="/therapists"
+                className="px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 transition-colors"
+              >
+                Terapeutas
+              </Link>
+              <Link
+                to="/administration"
+                className="px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20 transition-colors"
+              >
+                Administração
+              </Link>
 
             </nav>
           </div>
@@ -295,22 +292,20 @@ const Header: React.FC = () => {
                 Anamneses
               </Link>
 
-              <ConditionalRender roles={['admin']}>
-                <Link
-                  to="/therapists"
-                  className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Terapeutas
-                </Link>
-                <Link
-                  to="/settings"
-                  className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Configurações
-                </Link>
-              </ConditionalRender>
+              <Link
+                to="/therapists"
+                className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Terapeutas
+              </Link>
+              <Link
+                to="/administration"
+                className="block px-3 py-2 rounded-md text-sm font-medium text-sapere-brown hover:bg-sapere-orange/20"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Administração
+              </Link>
 
 
               {/* Mobile Contacts */}
