@@ -73,6 +73,14 @@ const TherapySession: React.FC = () => {
   
   // UI states
   const [activeTab, setActiveTab] = useState<'timer' | 'notes' | 'assessment' | 'planning'>('timer');
+
+  // Debug das abas - detectar mudanças
+  useEffect(() => {
+    console.log('=== DEBUG ABAS THERAPY SESSION ===');
+    console.log('Aba ativa atual:', activeTab);
+    console.log('Timestamp:', new Date().toLocaleTimeString());
+    console.log('===================================');
+  }, [activeTab]);
   
   // URL parameters for quick start
   const patientIdParam = searchParams.get('patientId');
@@ -318,12 +326,25 @@ const TherapySession: React.FC = () => {
               ].map(({ key, label, icon: Icon }) => (
                 <button
                   key={key}
-                  onClick={() => setActiveTab(key as any)}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log(`📅 ANTES: aba atual = ${activeTab}`);
+                    console.log(`📅 Clicando na aba ${label.toUpperCase()}`);
+                    setActiveTab(key as any);
+                    console.log(`📅 DEPOIS: mudando para = ${key}`);
+                  }}
                   className={`flex items-center space-x-2 py-4 border-b-2 font-medium text-sm transition-colors ${
                     activeTab === key
                       ? 'border-sapere-orange text-sapere-brown'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
+                  style={{
+                    position: 'relative',
+                    zIndex: 10,
+                    cursor: 'pointer'
+                  }}
                 >
                   <Icon className="h-4 w-4" />
                   <span>{label}</span>

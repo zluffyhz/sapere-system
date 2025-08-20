@@ -57,6 +57,14 @@ const AnamneseCompartilhada: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [activeTab, setActiveTab] = useState<'list' | 'upload'>('list');
 
+  // Debug das abas - detectar mudanças
+  useEffect(() => {
+    console.log('=== DEBUG ABAS ANAMNESE COMPARTILHADA ===');
+    console.log('Aba ativa atual:', activeTab);
+    console.log('Timestamp:', new Date().toLocaleTimeString());
+    console.log('==========================================');
+  }, [activeTab]);
+
   const categorias: { value: AnamneseCategoria; label: string; color: string }[] = [
     { value: 'pediatrica', label: 'Pediátrica', color: 'bg-blue-100 text-blue-800' },
     { value: 'adulto', label: 'Adulto', color: 'bg-green-100 text-green-800' },
@@ -297,22 +305,48 @@ const AnamneseCompartilhada: React.FC = () => {
         <div className="border-b border-gray-200">
           <nav className="flex space-x-8 px-6">
             <button
-              onClick={() => setActiveTab('list')}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('📋 ANTES: aba atual =', activeTab);
+                console.log('📋 Clicando na aba ANAMNESES CADASTRADAS');
+                setActiveTab('list');
+                console.log('📋 DEPOIS: mudando para = list');
+              }}
               className={`py-4 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'list'
                   ? 'border-sapere-orange text-sapere-brown'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
+              style={{
+                position: 'relative',
+                zIndex: 10,
+                cursor: 'pointer'
+              }}
             >
               📋 Anamneses Cadastradas
             </button>
             <button
-              onClick={() => setActiveTab('upload')}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('📤 ANTES: aba atual =', activeTab);
+                console.log('📤 Clicando na aba UPLOAD DE ARQUIVOS');
+                setActiveTab('upload');
+                console.log('📤 DEPOIS: mudando para = upload');
+              }}
               className={`py-4 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'upload'
                   ? 'border-sapere-orange text-sapere-brown'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
+              style={{
+                position: 'relative',
+                zIndex: 10,
+                cursor: 'pointer'
+              }}
             >
               📤 Upload de Arquivos
             </button>
