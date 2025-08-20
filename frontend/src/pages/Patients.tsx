@@ -72,15 +72,18 @@ const Patients: React.FC = () => {
   };
 
   const handleSearch = () => {
+    console.log('Botão Buscar clicado, termo:', searchTerm);
     loadPatients();
   };
 
   const handleCreatePatient = () => {
+    console.log('Botão Criar Paciente clicado');
     setEditingPatient(null);
     setShowPatientModal(true);
   };
 
   const handleEditPatient = (patient: PatientDetails) => {
+    console.log('Botão Editar Paciente clicado:', patient.nome);
     setEditingPatient(patient);
     setShowPatientModal(true);
   };
@@ -115,6 +118,7 @@ const Patients: React.FC = () => {
   };
 
   const handleDeletePatient = async (patientId: string) => {
+    console.log('Botão Deletar Paciente clicado:', patientId);
     if (!confirm('Tem certeza que deseja excluir este paciente?')) return;
     
     try {
@@ -160,7 +164,10 @@ const Patients: React.FC = () => {
 
         <div className="flex gap-3">
           <button
-            onClick={() => setShowFilters(!showFilters)}
+            onClick={() => {
+              console.log('Botão Filtros clicado, estado atual:', showFilters);
+              setShowFilters(!showFilters);
+            }}
             className="btn-secondary flex items-center gap-2"
           >
             <Filter className="h-4 w-4" />

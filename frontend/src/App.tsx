@@ -20,6 +20,7 @@ import TherapySession from '@/pages/TherapySession';
 import DebugAuth from '@/pages/DebugAuth';
 import Administration from '@/pages/Administration';
 import NavigationTest from '@/pages/NavigationTest';
+import ButtonTest from '@/pages/ButtonTest';
 
 // Páginas de teste para demonstrar funcionalidades por role
 const TestRolesPage: React.FC = () => {
@@ -144,6 +145,9 @@ const AppContent: React.FC = () => {
                   
                   {/* Teste de navegação */}
                   <Route path="/nav-test" element={<NavigationTest />} />
+                  
+                  {/* Teste de botões */}
+                  <Route path="/button-test" element={<ButtonTest />} />
                   
                   {/* Páginas que serão implementadas */}
                   <Route 

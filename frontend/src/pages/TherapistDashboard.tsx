@@ -144,6 +144,7 @@ const TherapistDashboard: React.FC = () => {
   };
 
   const handlePatientArrival = (appointmentId: string) => {
+    console.log('Check-in do paciente:', appointmentId);
     setTodayAppointments(prev => prev.map(app => 
       app.id === appointmentId 
         ? { ...app, status: 'confirmed' as const, checked_in_at: new Date().toISOString() }
@@ -152,6 +153,7 @@ const TherapistDashboard: React.FC = () => {
   };
 
   const handleStartAppointment = (appointmentId: string) => {
+    console.log('Iniciando atendimento:', appointmentId);
     setTodayAppointments(prev => prev.map(app => 
       app.id === appointmentId 
         ? { ...app, status: 'in_progress' as const }
@@ -160,6 +162,7 @@ const TherapistDashboard: React.FC = () => {
   };
 
   const handleCompleteAppointment = (appointmentId: string) => {
+    console.log('Finalizando atendimento:', appointmentId);
     setTodayAppointments(prev => prev.map(app => 
       app.id === appointmentId 
         ? { ...app, status: 'completed' as const }
@@ -298,7 +301,10 @@ const TherapistDashboard: React.FC = () => {
       <div className="bg-white rounded-xl shadow-lg overflow-hidden">
         <div className="flex border-b border-gray-200 overflow-x-auto">
           <button
-            onClick={() => setActiveTab('today')}
+            onClick={() => {
+              console.log('Clicando na aba Hoje, aba atual:', activeTab);
+              setActiveTab('today');
+            }}
             className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
               activeTab === 'today'
                 ? 'border-sapere-orange text-sapere-orange bg-orange-50'
@@ -311,7 +317,10 @@ const TherapistDashboard: React.FC = () => {
             </div>
           </button>
           <button
-            onClick={() => setActiveTab('patients')}
+            onClick={() => {
+              console.log('Clicando na aba Pacientes, aba atual:', activeTab);
+              setActiveTab('patients');
+            }}
             className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
               activeTab === 'patients'
                 ? 'border-sapere-orange text-sapere-orange bg-orange-50'
@@ -324,7 +333,10 @@ const TherapistDashboard: React.FC = () => {
             </div>
           </button>
           <button
-            onClick={() => setActiveTab('schedule')}
+            onClick={() => {
+              console.log('Clicando na aba Horários, aba atual:', activeTab);
+              setActiveTab('schedule');
+            }}
             className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
               activeTab === 'schedule'
                 ? 'border-sapere-orange text-sapere-orange bg-orange-50'
@@ -337,7 +349,10 @@ const TherapistDashboard: React.FC = () => {
             </div>
           </button>
           <button
-            onClick={() => setActiveTab('stats')}
+            onClick={() => {
+              console.log('Clicando na aba Estatísticas, aba atual:', activeTab);
+              setActiveTab('stats');
+            }}
             className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
               activeTab === 'stats'
                 ? 'border-sapere-orange text-sapere-orange bg-orange-50'

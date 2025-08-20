@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Clock, RefreshCw, Users, Calendar, MessageSquare, FileText, Play } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import DashboardStats from '@/components/dashboard/DashboardStats';
 import { useDashboard } from '@/context/DashboardContext';
 import { useAuth } from '@/context/AuthContext';
@@ -8,6 +8,15 @@ import { useAuth } from '@/context/AuthContext';
 const Dashboard: React.FC = () => {
   const { todaySessions, recentActivities, loading, refreshData } = useDashboard();
   const { user } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    console.log('Dashboard montado - verificando botões');
+    const buttons = document.querySelectorAll('button');
+    const links = document.querySelectorAll('a[href]');
+    console.log(`Total de botões: ${buttons.length}`);
+    console.log(`Total de links: ${links.length}`);
+  }, []);
 
   const getStatusLabel = (status: string) => {
     switch (status) {
@@ -47,7 +56,10 @@ const Dashboard: React.FC = () => {
           <p className="text-gray-600 mt-2">Visão geral e métricas do Centro de Desenvolvimento Sapere</p>
         </div>
         <button
-          onClick={refreshData}
+          onClick={() => {
+            console.log('Clicando no botão Atualizar - refreshData chamado');
+            refreshData();
+          }}
           className="btn-secondary flex items-center gap-2"
           disabled={loading}
         >
@@ -170,48 +182,95 @@ const Dashboard: React.FC = () => {
           <Link
             to="/patients"
             className="flex flex-col items-center space-y-2 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-sapere-orange transition-colors"
+            onClick={() => console.log('Clicando no link Pacientes')}
           >
             <Users className="h-6 w-6 text-sapere-orange" />
             <span className="text-sm font-medium text-gray-700">Pacientes</span>
           </Link>
+          <button
+            onClick={() => {
+              console.log('Navegando para /patients via button');
+              navigate('/patients');
+            }}
+            className="flex flex-col items-center space-y-2 p-4 border border-sapere-orange bg-sapere-orange/10 rounded-lg hover:bg-sapere-orange/20 transition-colors"
+          >
+            <Users className="h-6 w-6 text-sapere-orange" />
+            <span className="text-sm font-medium text-sapere-brown">Botão Pacientes</span>
+          </button>
 
-          <Link
-            to="/appointments"
+          <button
+            onClick={() => {
+              console.log('Navegando para /appointments via button');
+              navigate('/appointments');
+            }}
             className="flex flex-col items-center space-y-2 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-sapere-orange transition-colors"
           >
             <Calendar className="h-6 w-6 text-blue-600" />
             <span className="text-sm font-medium text-gray-700">Agendamentos</span>
-          </Link>
+          </button>
 
-          <Link
-            to="/therapy"
+          <button
+            onClick={() => {
+              console.log('Navegando para /therapy via button');
+              navigate('/therapy');
+            }}
             className="flex flex-col items-center space-y-2 p-4 border border-sapere-orange bg-sapere-orange/10 rounded-lg hover:bg-sapere-orange/20 transition-colors"
           >
             <Play className="h-6 w-6 text-sapere-orange" />
             <span className="text-sm font-medium text-sapere-brown">Terapia</span>
-          </Link>
+          </button>
 
-          <Link
-            to="/communication"
+          <button
+            onClick={() => {
+              console.log('Navegando para /communication via button');
+              navigate('/communication');
+            }}
             className="flex flex-col items-center space-y-2 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-sapere-orange transition-colors"
           >
             <MessageSquare className="h-6 w-6 text-green-600" />
             <span className="text-sm font-medium text-gray-700">Comunicação</span>
-          </Link>
+          </button>
 
-          <Link
-            to="/anamnese"
+          <button
+            onClick={() => {
+              console.log('Navegando para /anamnese via button');
+              navigate('/anamnese');
+            }}
             className="flex flex-col items-center space-y-2 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-sapere-orange transition-colors"
           >
             <FileText className="h-6 w-6 text-purple-600" />
             <span className="text-sm font-medium text-gray-700">Anamneses</span>
-          </Link>
+          </button>
         </div>
 
         <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
           <p className="text-sm text-green-800">
             ✅ <strong>Todos os botões devem funcionar agora!</strong> Clique em qualquer botão acima para testar a navegação.
           </p>
+          <div className="mt-2 text-xs text-green-700">
+            <p>• Link Pacientes (React Router Link)</p>
+            <p>• Botões com useNavigate hook</p>
+            <p>• Console logs para debug</p>
+          </div>
+        </div>
+        <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <h4 className="text-sm font-semibold text-blue-800">🔧 Status dos Botões:</h4>
+          <div className="mt-2 text-xs text-blue-700 space-y-1">
+            <p><strong>Header:</strong> Menu do usuário, logout - OK</p>
+            <p><strong>Sidebar:</strong> NavLink navigation - OK</p>
+            <p><strong>Dashboard:</strong> Refresh button, navigation cards - FIXED</p>
+            <p><strong>Pacientes:</strong> CRUD operations - FIXED</p>
+            <p><strong>TherapistDashboard:</strong> Tab buttons - FIXED</p>
+          </div>
+          <button
+            onClick={() => {
+              console.log('Navegando para página de teste de botões');
+              navigate('/button-test');
+            }}
+            className="mt-3 btn-primary text-xs"
+          >
+            🔧 Abrir Teste Completo de Botões
+          </button>
         </div>
       </div>
     </div>

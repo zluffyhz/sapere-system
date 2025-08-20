@@ -109,4 +109,39 @@
   .animate-pulse-glow {
     animation: pulse-glow 2s ease-in-out infinite;
   }
+  
+  /* Emergency button fixes - Ensure all buttons are clickable */
+  button {
+    position: relative !important;
+    z-index: 10 !important;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+  }
+
+  button:disabled {
+    cursor: not-allowed !important;
+    opacity: 0.5 !important;
+  }
+
+  button:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+  
+  /* Ensure Links are clickable */
+  a {
+    position: relative !important;
+    z-index: 10 !important;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+  }
+  
+  /* Fix for overlay issues */
+  .card {
+    z-index: 1 !important;
+  }
+  
+  /* Modal z-index */
+  .modal, [role="dialog"] {
+    z-index: 50 !important;
+  }
 }
