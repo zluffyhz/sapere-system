@@ -20,6 +20,8 @@ import TherapySession from '@/pages/TherapySession';
 import DebugAuth from '@/pages/DebugAuth';
 import Administration from '@/pages/Administration';
 import AdministrationSimple from '@/pages/AdministrationSimple';
+import AdministrationFixed from '@/pages/AdministrationFixed';
+import TherapistDashboardFixed from '@/pages/TherapistDashboardFixed';
 import NavigationTest from '@/pages/NavigationTest';
 import ButtonTest from '@/pages/ButtonTest';
 
@@ -257,6 +259,8 @@ const AppContent: React.FC = () => {
                   
                   {/* Teste de Abas Simples */}
                   <Route path="/admin-simple" element={<AdministrationSimple />} />
+                  <Route path="/admin-fixed" element={<AdministrationFixed />} />
+                  <Route path="/therapist-fixed/:id" element={<TherapistDashboardFixed />} />
                   
                   {/* Página 404 para rotas não encontradas */}
                   <Route 
