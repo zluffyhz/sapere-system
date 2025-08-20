@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { Eye, EyeOff, AlertCircle, CheckCircle, Mail, Lock, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle, CheckCircle, Mail, Lock, Loader2, Activity } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useMobileOptimizations } from '@/components/common/MobileOptimizations';
+import { debugAPI, healthCheck } from '@/services/api';
 
 interface LoginForm {
   email: string;
@@ -16,6 +17,23 @@ const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const [successMessage, setSuccessMessage] = useState<string>('');
+  const [apiStatus, setApiStatus] = useState<any>(null);
+  const [testingAPI, setTestingAPI] = useState(false);
+
+  // Testar API na inicialização
+  const testAPIConnection = async () => {
+    console.log('🧪 Login: Testing API connection...');
+    setTestingAPI(true);
+    try {
+      const status = await debugAPI.testConnection();
+      setApiStatus(status);
+      console.log('🧪 Login: API test result:', status);
+    } catch (error) {
+      console.error('❌ Login: API test failed:', error);
+    } finally {
+      setTestingAPI(false);
+    }
+  };
   
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -33,6 +51,13 @@ const Login: React.FC = () => {
       remember_me: false
     }
   });
+
+  // Inicialização da página
+  useEffect(() => {
+    console.log('🔐 Login: Component mounted');
+    debugAPI.logEnvironment();
+    testAPIConnection();
+  }, []);
 
   // Verificar se há mensagens de redirecionamento
   useEffect(() => {
@@ -59,24 +84,35 @@ const Login: React.FC = () => {
     // Se já está autenticado, redirecionar
     if (isAuthenticated) {
       const redirectPath = redirect || '/';
+      console.log('✅ Login: User already authenticated, redirecting to:', redirectPath);
       navigate(redirectPath, { replace: true });
     }
   }, [searchParams, isAuthenticated, navigate]);
 
   const onSubmit = async (data: LoginForm) => {
+    console.log('🔐 Login: Form submitted', { email: data.email, remember: data.remember_me });
     setIsLoading(true);
     setError('');
     setSuccessMessage('');
     
     try {
+      console.log('🔐 Login: Calling login function...');
       await login(data.email, data.password, data.remember_me);
+      
+      console.log('✅ Login: Success! Redirecting...');
+      setSuccessMessage('Login realizado com sucesso! Redirecionando...');
       
       // Redirecionar para a página solicitada ou dashboard
       const redirectPath = searchParams.get('redirect') || '/';
+      console.log('🔄 Login: Redirecting to:', redirectPath);
       navigate(redirectPath, { replace: true });
     } catch (err: any) {
-      console.error('Erro no login:', err);
-      setError(err.message || 'Erro ao fazer login. Tente novamente.');
+      console.error('❌ Login: Error occurred:', err);
+      const errorMessage = getErrorMessage(err.message || 'Erro ao fazer login. Tente novamente.');
+      setError(errorMessage);
+      
+      // Testar API novamente em caso de erro
+      await testAPIConnection();
     } finally {
       setIsLoading(false);
     }
@@ -289,6 +325,55 @@ const Login: React.FC = () => {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Status da API */}
+        <div className="w-full max-w-sm sm:max-w-md mt-6">
+          <div className="bg-gray-50/90 backdrop-blur-sm border border-gray-200 rounded-xl p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                <Activity className="h-4 w-4" />
+                Status da API
+              </h3>
+              <button
+                onClick={testAPIConnection}
+                disabled={testingAPI}
+                className="text-xs bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded transition-colors"
+              >
+                {testingAPI ? '🔄' : '🔍'}
+              </button>
+            </div>
+            
+            {testingAPI ? (
+              <div className="text-xs text-gray-600 text-center py-2">
+                🔄 Testando conectividade...
+              </div>
+            ) : apiStatus ? (
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between">
+                  <span>Ambiente:</span>
+                  <span className="font-medium">{apiStatus.environment}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>API:</span>
+                  <span className={`px-2 py-0.5 rounded text-xs ${
+                    apiStatus.health.status === 'healthy' 
+                      ? 'bg-green-100 text-green-700' 
+                      : 'bg-red-100 text-red-700'
+                  }`}>
+                    {apiStatus.health.status === 'healthy' ? '✅ Online' : '❌ Offline'}
+                  </span>
+                </div>
+                <div className="text-xs text-gray-500 mt-2 truncate">
+                  {apiStatus.apiUrl}
+                </div>
+              </div>
+            ) : (
+              <div className="text-xs text-gray-500 text-center py-2">
+                Clique em 🔍 para testar
+              </div>
+            )}
           </div>
         </div>
 

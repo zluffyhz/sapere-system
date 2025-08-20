@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, X, AlertCircle, RefreshCw } from 'lucide-react';
+import { Check, X, AlertCircle, RefreshCw, Activity, Play } from 'lucide-react';
+import { productionTest } from '@/utils/productionTest';
 
 const ButtonTest: React.FC = () => {
   const navigate = useNavigate();
   const [testResults, setTestResults] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(false);
+  const [productionResults, setProductionResults] = useState<any[]>([]);
+  const [runningProductionTest, setRunningProductionTest] = useState(false);
 
   const logTest = (testName: string, success: boolean = true) => {
     console.log(`Teste ${testName}:`, success ? '✅ SUCESSO' : '❌ FALHOU');
@@ -36,6 +39,25 @@ const ButtonTest: React.FC = () => {
     setLoading(false);
     console.log('🎉 TODOS OS TESTES CONCLUÍDOS!');
   };
+
+  const runProductionTests = async () => {
+    console.log('🚀 INICIANDO TESTES DE PRODUÇÃO');
+    setRunningProductionTest(true);
+    
+    try {
+      const results = await productionTest.runAllTests();
+      setProductionResults(results);
+    } catch (error) {
+      console.error('Erro nos testes de produção:', error);
+    } finally {
+      setRunningProductionTest(false);
+    }
+  };
+
+  useEffect(() => {
+    // Auto-executar testes de produção na montagem do componente
+    runProductionTests();
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -192,6 +214,50 @@ const ButtonTest: React.FC = () => {
         )}
       </div>
 
+      {/* Testes de Produção */}
+      <div className="card">
+        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <Activity className="h-5 w-5 text-sapere-orange" />
+          Testes de Produção Completos
+        </h2>
+        
+        <button
+          onClick={runProductionTests}
+          disabled={runningProductionTest}
+          className="btn-primary flex items-center gap-2 mb-4"
+        >
+          <Play className={`h-4 w-4 ${runningProductionTest ? 'animate-spin' : ''}`} />
+          {runningProductionTest ? 'Executando Testes...' : 'Executar Testes de Sistema'}
+        </button>
+
+        {productionResults.length > 0 && (
+          <div className="bg-gray-50 rounded-lg p-4">
+            <h3 className="font-medium mb-3">Resultados dos Testes de Sistema:</h3>
+            <div className="space-y-2">
+              {productionResults.map((result, index) => {
+                const icon = result.status === 'success' ? '✅' : result.status === 'error' ? '❌' : '⚠️';
+                const colorClass = result.status === 'success' ? 'text-green-700' : 
+                                  result.status === 'error' ? 'text-red-700' : 'text-yellow-700';
+                
+                return (
+                  <div key={index} className={`text-sm ${colorClass} flex items-start gap-2`}>
+                    <span>{icon}</span>
+                    <div className="flex-1">
+                      <span className="font-medium">{result.test}:</span> {result.message}
+                      {result.details && (
+                        <div className="text-xs text-gray-600 mt-1">
+                          {JSON.stringify(result.details, null, 2)}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Instruções de Debug */}
       <div className="card bg-blue-50">
         <h2 className="text-lg font-semibold mb-4 text-blue-800">
@@ -199,10 +265,11 @@ const ButtonTest: React.FC = () => {
         </h2>
         <div className="text-sm text-blue-700 space-y-2">
           <p><strong>1.</strong> Abra o Console do Navegador (F12 → Console)</p>
-          <p><strong>2.</strong> Clique nos botões acima e verifique os logs</p>
-          <p><strong>3.</strong> Se não aparecer logs, o onClick não está funcionando</p>
-          <p><strong>4.</strong> Verifique se há erros JavaScript no console</p>
-          <p><strong>5.</strong> Teste a navegação e estado de cada componente</p>
+          <p><strong>2.</strong> Execute <code>testProduction()</code> no console</p>
+          <p><strong>3.</strong> Clique nos botões acima e verifique os logs</p>
+          <p><strong>4.</strong> Se não aparecer logs, o onClick não está funcionando</p>
+          <p><strong>5.</strong> Verifique se há erros JavaScript no console</p>
+          <p><strong>6.</strong> Teste a navegação e estado de cada componente</p>
         </div>
       </div>
     </div>

@@ -1,7 +1,20 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { AuthResponse, User, UserRole } from '@/types';
 
-const API_BASE_URL = (import.meta as any).env.VITE_API_URL || 'http://localhost:3002/api';
+// Detectar ambiente de forma robusta
+const isProduction = process.env.NODE_ENV === 'production' || 
+                    window.location.hostname.includes('vercel.app') || 
+                    window.location.hostname !== 'localhost';
+
+// URL base dinâmica baseada no ambiente
+const API_BASE_URL = isProduction 
+  ? 'https://sapere-system-production.up.railway.app'
+  : 'http://localhost:3002';
+
+console.log('🔧 ENVIRONMENT:', isProduction ? 'PRODUCTION' : 'DEVELOPMENT');
+console.log('🔧 API_BASE_URL:', API_BASE_URL);
+console.log('🔧 HOSTNAME:', window.location.hostname);
+console.log('🔧 VITE_API_URL:', (import.meta as any).env.VITE_API_URL);
 
 // Storage keys
 const STORAGE_KEYS = {
@@ -10,13 +23,14 @@ const STORAGE_KEYS = {
   REMEMBER: 'sapere_remember'
 };
 
-// Criar instância do axios
+// Criar instância do axios com configuração robusta
 const api = axios.create({
   baseURL: API_BASE_URL,
+  timeout: 15000, // 15 segundos timeout
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 15000, // 15 segundos
+  withCredentials: false, // Evitar problemas de CORS
 });
 
 // Função helper para obter token do storage
@@ -41,10 +55,25 @@ const clearAuthData = (): void => {
   sessionStorage.removeItem(STORAGE_KEYS.USER);
 };
 
+// Função para determinar o endpoint correto baseado no ambiente
+const getEndpoint = (path: string): string => {
+  if (isProduction) {
+    // Em produção, usar /api/[path]
+    return path.startsWith('/api/') ? path : `/api${path}`;
+  } else {
+    // Em desenvolvimento, usar /[path] diretamente
+    return path.startsWith('/api/') ? path.replace('/api', '') : path;
+  }
+};
+
 // Interceptor para adicionar token nas requisições
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = getStoredToken();
+    
+    console.log('📤 API REQUEST:', config.method?.toUpperCase(), config.url);
+    console.log('🔑 Token exists:', !!token);
+    console.log('🔑 Token preview:', token ? `${token.substring(0, 20)}...` : 'none');
     
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -56,20 +85,42 @@ api.interceptors.request.use(
       _t: Date.now()
     };
     
+    // Log completo da configuração da requisição
+    console.log('📤 Request config:', {
+      url: config.url,
+      method: config.method,
+      baseURL: config.baseURL,
+      headers: config.headers,
+      timeout: config.timeout
+    });
+    
     return config;
   },
   (error) => {
+    console.error('❌ REQUEST INTERCEPTOR ERROR:', error);
     return Promise.reject(error);
   }
 );
 
-// Interceptor para lidar com respostas e erros
+// Interceptor para tratar respostas e erros
 api.interceptors.response.use(
   (response) => {
-    // Resposta bem-sucedida
+    console.log('✅ API RESPONSE SUCCESS:', {
+      url: response.config.url,
+      status: response.status,
+      statusText: response.statusText,
+      data: response.data
+    });
     return response;
   },
   async (error: AxiosError) => {
+    console.error('❌ API RESPONSE ERROR:', {
+      url: error.config?.url,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      message: error.message
+    });
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
     
     // Lidar com erros de autenticação
@@ -152,11 +203,20 @@ api.interceptors.response.use(
 // Auth API
 export const authAPI = {
   login: async (loginField: string, password: string, rememberMe = false): Promise<AuthResponse> => {
-    const response = await api.post('/api/auth/login', { 
-      email: loginField,  // Backend espera "email" e "password"
+    const endpoint = getEndpoint('/auth/login');
+    console.log('🔐 ATTEMPTING LOGIN:', {
+      email: loginField,
+      endpoint: API_BASE_URL + endpoint,
+      environment: isProduction ? 'PRODUCTION' : 'DEVELOPMENT'
+    });
+    
+    const response = await api.post(endpoint, { 
+      email: loginField.trim().toLowerCase(),  // Backend espera "email" e "password"
       password, 
       remember_me: rememberMe 
     });
+    
+    console.log('🔐 LOGIN RESPONSE:', response.data);
     return response.data;
   },
 
@@ -199,16 +259,165 @@ export const authAPI = {
   },
 
   verifyToken: async (): Promise<{ valid: boolean; user: User }> => {
-    const response = await api.get('/api/auth/verify');
+    const endpoint = getEndpoint('/auth/verify');
+    console.log('🧪 VERIFYING TOKEN:', endpoint);
+    const response = await api.get(endpoint);
     return response.data;
+  },
+
+  // Funções auxiliares para debug
+  getToken: () => {
+    const token = getStoredToken();
+    console.log('🔑 GET TOKEN:', token ? `${token.substring(0, 20)}...` : 'none');
+    return token;
+  },
+
+  getCurrentUser: () => {
+    try {
+      const userStr = localStorage.getItem(STORAGE_KEYS.USER) || sessionStorage.getItem(STORAGE_KEYS.USER);
+      if (!userStr) return null;
+      
+      const user = JSON.parse(userStr);
+      console.log('👤 CURRENT USER:', user);
+      return user;
+    } catch (error) {
+      console.error('Error parsing user from storage:', error);
+      clearAuthData();
+      return null;
+    }
+  },
+
+  isAuthenticated: () => {
+    const token = getStoredToken();
+    const user = localStorage.getItem(STORAGE_KEYS.USER) || sessionStorage.getItem(STORAGE_KEYS.USER);
+    const isAuth = !!(token && user);
+    
+    console.log('🔒 AUTHENTICATION CHECK:', {
+      hasToken: !!token,
+      hasUser: !!user,
+      isAuthenticated: isAuth
+    });
+    
+    return isAuth;
+  },
+
+  testToken: async () => {
+    try {
+      const token = getStoredToken();
+      if (!token) {
+        console.log('🔑 No token to test');
+        return false;
+      }
+      
+      console.log('🧪 TESTING TOKEN...');
+      await authAPI.verifyToken();
+      
+      console.log('✅ TOKEN VALID');
+      return true;
+    } catch (error) {
+      console.error('❌ TOKEN INVALID:', error);
+      return false;
+    }
   }
 };
+
+// Health Check com diagnóstico completo
+export const healthCheck = async () => {
+  try {
+    console.log('🏥 HEALTH CHECK STARTING...');
+    
+    // Testar diferentes endpoints de health
+    const endpoints = [
+      getEndpoint('/health'),
+      getEndpoint('/'),
+      getEndpoint('/api/health')
+    ];
+    
+    for (const endpoint of endpoints) {
+      try {
+        console.log(`🏥 Testing endpoint: ${API_BASE_URL}${endpoint}`);
+        const response = await api.get(endpoint, { timeout: 5000 });
+        
+        console.log('✅ HEALTH CHECK SUCCESS:', {
+          endpoint,
+          status: response.status,
+          data: response.data
+        });
+        
+        return {
+          status: 'healthy',
+          endpoint,
+          data: response.data,
+          timestamp: new Date().toISOString()
+        };
+      } catch (error) {
+        console.log(`❌ Endpoint ${endpoint} failed:`, error);
+        continue;
+      }
+    }
+    
+    throw new Error('All health check endpoints failed');
+  } catch (error) {
+    console.error('❌ HEALTH CHECK FAILED:', error);
+    return {
+      status: 'unhealthy',
+      error: error,
+      timestamp: new Date().toISOString()
+    };
+  }
+};
+
+// Função de debug para testar conectividade
+export const debugAPI = {
+  async testConnection() {
+    console.log('🔍 DEBUG: Testing API connection...');
+    
+    // 1. Health check
+    const health = await healthCheck();
+    console.log('🏥 Health result:', health);
+    
+    // 2. Test authentication
+    const isAuth = authAPI.isAuthenticated();
+    console.log('🔒 Is authenticated:', isAuth);
+    
+    // 3. Test token if exists
+    if (isAuth) {
+      const tokenValid = await authAPI.testToken();
+      console.log('🔑 Token valid:', tokenValid);
+    }
+    
+    return {
+      health,
+      authenticated: isAuth,
+      apiUrl: API_BASE_URL,
+      environment: isProduction ? 'PRODUCTION' : 'DEVELOPMENT'
+    };
+  },
+
+  logEnvironment() {
+    console.log('🔍 ENVIRONMENT DEBUG:', {
+      NODE_ENV: process.env.NODE_ENV,
+      hostname: window.location.hostname,
+      origin: window.location.origin,
+      isProduction,
+      API_BASE_URL,
+      VITE_API_URL: (import.meta as any).env.VITE_API_URL,
+      token: authAPI.getToken() ? 'EXISTS' : 'MISSING',
+      user: authAPI.getCurrentUser() ? 'EXISTS' : 'MISSING'
+    });
+  }
+};
+
+// Log ambiente na inicialização
+debugAPI.logEnvironment();
 
 // Protected API (rotas que requerem autenticação)
 export const protectedAPI = {
   // Dashboard
   getDashboard: async (): Promise<any> => {
-    const response = await api.get('/api/protected/dashboard');
+    const endpoint = getEndpoint('/protected/dashboard');
+    console.log('📊 FETCHING DASHBOARD:', endpoint);
+    const response = await api.get(endpoint);
     return response.data;
   },
 

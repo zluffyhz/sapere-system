@@ -1,22 +1,65 @@
-import React, { useEffect } from 'react';
-import { Clock, RefreshCw, Users, Calendar, MessageSquare, FileText, Play } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Clock, RefreshCw, Users, Calendar, MessageSquare, FileText, Play, AlertCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import DashboardStats from '@/components/dashboard/DashboardStats';
 import { useDashboard } from '@/context/DashboardContext';
 import { useAuth } from '@/context/AuthContext';
+import { healthCheck, debugAPI, protectedAPI } from '@/services/api';
 
 const Dashboard: React.FC = () => {
   const { todaySessions, recentActivities, loading, refreshData } = useDashboard();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const [apiStatus, setApiStatus] = useState<any>(null);
+  const [dashboardData, setDashboardData] = useState<any>(null);
+  const [loadingAPI, setLoadingAPI] = useState(false);
+
+  // Testar conectividade com a API
+  const testAPIConnection = async () => {
+    console.log('🧪 Dashboard: Testing API connection...');
+    setLoadingAPI(true);
+    try {
+      const status = await debugAPI.testConnection();
+      setApiStatus(status);
+      console.log('🧪 Dashboard: API test result:', status);
+      
+      // Tentar carregar dados do dashboard se autenticado
+      if (isAuthenticated && status.health.status === 'healthy') {
+        try {
+          console.log('📊 Dashboard: Fetching protected dashboard data...');
+          const data = await protectedAPI.getDashboard();
+          setDashboardData(data);
+          console.log('✅ Dashboard: Protected data loaded:', data);
+        } catch (error) {
+          console.error('❌ Dashboard: Failed to load protected data:', error);
+        }
+      }
+    } catch (error) {
+      console.error('❌ Dashboard: API test failed:', error);
+    } finally {
+      setLoadingAPI(false);
+    }
+  };
 
   useEffect(() => {
-    console.log('Dashboard montado - verificando botões');
+    console.log('📋 Dashboard: Component mounted');
+    console.log('👤 User:', user);
+    console.log('🔒 Is Authenticated:', isAuthenticated);
+    
     const buttons = document.querySelectorAll('button');
     const links = document.querySelectorAll('a[href]');
-    console.log(`Total de botões: ${buttons.length}`);
-    console.log(`Total de links: ${links.length}`);
-  }, []);
+    console.log(`🔘 Total buttons: ${buttons.length}`);
+    console.log(`🔗 Total links: ${links.length}`);
+    
+    // Testar API automaticamente
+    testAPIConnection();
+  }, [isAuthenticated]);
+
+  const handleRefreshData = async () => {
+    console.log('🔄 Dashboard: Manual refresh triggered');
+    await refreshData();
+    await testAPIConnection();
+  };
 
   const getStatusLabel = (status: string) => {
     switch (status) {
@@ -56,15 +99,12 @@ const Dashboard: React.FC = () => {
           <p className="text-gray-600 mt-2">Visão geral e métricas do Centro de Desenvolvimento Sapere</p>
         </div>
         <button
-          onClick={() => {
-            console.log('Clicando no botão Atualizar - refreshData chamado');
-            refreshData();
-          }}
+          onClick={handleRefreshData}
           className="btn-secondary flex items-center gap-2"
-          disabled={loading}
+          disabled={loading || loadingAPI}
         >
-          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-          Atualizar
+          <RefreshCw className={`h-4 w-4 ${(loading || loadingAPI) ? 'animate-spin' : ''}`} />
+          {(loading || loadingAPI) ? 'Atualizando...' : 'Atualizar'}
         </button>
       </div>
 
@@ -253,24 +293,69 @@ const Dashboard: React.FC = () => {
             <p>• Console logs para debug</p>
           </div>
         </div>
+        {/* Status da API */}
         <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-          <h4 className="text-sm font-semibold text-blue-800">🔧 Status dos Botões:</h4>
-          <div className="mt-2 text-xs text-blue-700 space-y-1">
-            <p><strong>Header:</strong> Menu do usuário, logout - OK</p>
-            <p><strong>Sidebar:</strong> NavLink navigation - OK</p>
-            <p><strong>Dashboard:</strong> Refresh button, navigation cards - FIXED</p>
-            <p><strong>Pacientes:</strong> CRUD operations - FIXED</p>
-            <p><strong>TherapistDashboard:</strong> Tab buttons - FIXED</p>
+          <h4 className="text-sm font-semibold text-blue-800 flex items-center gap-2">
+            <AlertCircle className="h-4 w-4" />
+            Status da Conexão com API
+          </h4>
+          {loadingAPI ? (
+            <div className="mt-2 text-xs text-blue-600">
+              <p>Testando conectividade...</p>
+            </div>
+          ) : apiStatus ? (
+            <div className="mt-2 text-xs space-y-1">
+              <p><strong>Ambiente:</strong> {apiStatus.environment}</p>
+              <p><strong>API URL:</strong> {apiStatus.apiUrl}</p>
+              <p><strong>Saúde:</strong> 
+                <span className={`ml-1 px-2 py-0.5 rounded text-xs ${
+                  apiStatus.health.status === 'healthy' 
+                    ? 'bg-green-100 text-green-700' 
+                    : 'bg-red-100 text-red-700'
+                }`}>
+                  {apiStatus.health.status === 'healthy' ? '✅ Saudável' : '❌ Problema'}
+                </span>
+              </p>
+              <p><strong>Autenticado:</strong> 
+                <span className={`ml-1 px-2 py-0.5 rounded text-xs ${
+                  apiStatus.authenticated 
+                    ? 'bg-green-100 text-green-700' 
+                    : 'bg-red-100 text-red-700'
+                }`}>
+                  {apiStatus.authenticated ? '✅ Sim' : '❌ Não'}
+                </span>
+              </p>
+              {dashboardData && (
+                <p><strong>Dados Protegidos:</strong> 
+                  <span className="ml-1 px-2 py-0.5 rounded text-xs bg-green-100 text-green-700">
+                    ✅ Carregados
+                  </span>
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="mt-2 text-xs text-gray-600">
+              <p>Clique em "Testar API" para verificar conectividade</p>
+            </div>
+          )}
+          <div className="mt-3 flex gap-2">
+            <button
+              onClick={testAPIConnection}
+              disabled={loadingAPI}
+              className="btn-secondary text-xs"
+            >
+              {loadingAPI ? '🔄 Testando...' : '🧪 Testar API'}
+            </button>
+            <button
+              onClick={() => {
+                console.log('🔧 Navegando para página de teste de botões');
+                navigate('/button-test');
+              }}
+              className="btn-primary text-xs"
+            >
+              🔧 Teste de Botões
+            </button>
           </div>
-          <button
-            onClick={() => {
-              console.log('Navegando para página de teste de botões');
-              navigate('/button-test');
-            }}
-            className="mt-3 btn-primary text-xs"
-          >
-            🔧 Abrir Teste Completo de Botões
-          </button>
         </div>
       </div>
     </div>

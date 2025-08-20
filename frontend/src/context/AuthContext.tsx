@@ -86,10 +86,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Função de login
   const login = useCallback(async (email: string, password: string, rememberMe = false) => {
     try {
+      console.log('🔐 AuthContext: Starting login process', { email, rememberMe });
       setIsLoading(true);
       const response = await authAPI.login(email, password, rememberMe);
+      console.log('✅ AuthContext: Login successful, saving auth data');
       saveAuth(response.token, response.user, rememberMe);
     } catch (error: any) {
+      console.error('❌ AuthContext: Login failed', error);
       clearAuth();
       throw new Error(error.message || 'Erro no login');
     } finally {
@@ -182,17 +185,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const initAuth = async () => {
       try {
+        console.log('🔄 AuthContext: Initializing authentication...');
+        
         // Verificar localStorage primeiro (remember me)
         let storedToken = localStorage.getItem(STORAGE_KEYS.TOKEN);
         let storedUser = localStorage.getItem(STORAGE_KEYS.USER);
+        
+        console.log('🔍 AuthContext: Checking localStorage', {
+          hasToken: !!storedToken,
+          hasUser: !!storedUser
+        });
         
         // Se não encontrar no localStorage, verificar sessionStorage
         if (!storedToken) {
           storedToken = sessionStorage.getItem(STORAGE_KEYS.TOKEN);
           storedUser = sessionStorage.getItem(STORAGE_KEYS.USER);
+          
+          console.log('🔍 AuthContext: Checking sessionStorage', {
+            hasToken: !!storedToken,
+            hasUser: !!storedUser
+          });
         }
 
         if (storedToken && storedUser && !isTokenExpired()) {
+          console.log('✅ AuthContext: Found valid stored auth, restoring session');
           const userData = JSON.parse(storedUser);
           setToken(storedToken);
           setUser(userData);
@@ -202,23 +218,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           
           // Tentar verificar o token em background
           try {
+            console.log('🧪 AuthContext: Verifying stored token...');
             const verification = await authAPI.verifyToken();
             if (!verification.valid) {
-              console.warn('Token inválido, fazendo logout');
+              console.warn('❌ AuthContext: Stored token is invalid, logging out');
               clearAuth();
+            } else {
+              console.log('✅ AuthContext: Stored token is valid');
             }
           } catch (error) {
-            console.warn('Erro ao verificar token, fazendo logout:', error);
+            console.warn('⚠️ AuthContext: Error verifying token, logging out:', error);
             clearAuth();
           }
         } else if (storedToken) {
-          // Token expirado
+          console.log('⏰ AuthContext: Token expired, clearing auth');
           clearAuth();
+        } else {
+          console.log('🚫 AuthContext: No stored authentication found');
         }
       } catch (error) {
-        console.error('Erro ao inicializar autenticação:', error);
+        console.error('❌ AuthContext: Error initializing authentication:', error);
         clearAuth();
       } finally {
+        console.log('🏁 AuthContext: Initialization complete');
         setIsLoading(false);
       }
     };
