@@ -19,6 +19,7 @@ import Profile from '@/pages/Profile';
 import TherapySession from '@/pages/TherapySession';
 import DebugAuth from '@/pages/DebugAuth';
 import Administration from '@/pages/Administration';
+import AdministrationSimple from '@/pages/AdministrationSimple';
 import NavigationTest from '@/pages/NavigationTest';
 import ButtonTest from '@/pages/ButtonTest';
 
@@ -254,6 +255,8 @@ const AppContent: React.FC = () => {
 
                   <Route path="/profile" element={<Profile />} />
                   
+                  {/* Teste de Abas Simples */}
+                  <Route path="/admin-simple" element={<AdministrationSimple />} />
                   
                   {/* Página 404 para rotas não encontradas */}
                   <Route 

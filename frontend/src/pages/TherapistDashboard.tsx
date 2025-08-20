@@ -34,6 +34,14 @@ const TherapistDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'today' | 'patients' | 'schedule' | 'stats'>('today');
 
+  // Debug das abas - detectar mudanças
+  useEffect(() => {
+    console.log('=== DEBUG ABAS THERAPIST DASHBOARD ===');
+    console.log('Aba ativa atual:', activeTab);
+    console.log('Timestamp:', new Date().toLocaleTimeString());
+    console.log('=====================================');
+  }, [activeTab]);
+
   useEffect(() => {
     const loadTherapistData = async () => {
       setLoading(true);
@@ -301,15 +309,25 @@ const TherapistDashboard: React.FC = () => {
       <div className="bg-white rounded-xl shadow-lg overflow-hidden">
         <div className="flex border-b border-gray-200 overflow-x-auto">
           <button
-            onClick={() => {
-              console.log('Clicando na aba Hoje, aba atual:', activeTab);
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('🔄 ANTES: aba atual =', activeTab);
+              console.log('🔄 Clicando na aba HOJE');
               setActiveTab('today');
+              console.log('🔄 DEPOIS: mudando para = today');
             }}
             className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
               activeTab === 'today'
                 ? 'border-sapere-orange text-sapere-orange bg-orange-50'
                 : 'border-transparent text-gray-500 hover:text-gray-700'
             }`}
+            style={{
+              position: 'relative',
+              zIndex: 10,
+              cursor: 'pointer'
+            }}
           >
             <div className="flex items-center space-x-2">
               <Clock className="h-4 w-4" />
@@ -317,15 +335,25 @@ const TherapistDashboard: React.FC = () => {
             </div>
           </button>
           <button
-            onClick={() => {
-              console.log('Clicando na aba Pacientes, aba atual:', activeTab);
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('👥 ANTES: aba atual =', activeTab);
+              console.log('👥 Clicando na aba PACIENTES');
               setActiveTab('patients');
+              console.log('👥 DEPOIS: mudando para = patients');
             }}
             className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
               activeTab === 'patients'
                 ? 'border-sapere-orange text-sapere-orange bg-orange-50'
                 : 'border-transparent text-gray-500 hover:text-gray-700'
             }`}
+            style={{
+              position: 'relative',
+              zIndex: 10,
+              cursor: 'pointer'
+            }}
           >
             <div className="flex items-center space-x-2">
               <Users className="h-4 w-4" />
@@ -333,15 +361,25 @@ const TherapistDashboard: React.FC = () => {
             </div>
           </button>
           <button
-            onClick={() => {
-              console.log('Clicando na aba Horários, aba atual:', activeTab);
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('📅 ANTES: aba atual =', activeTab);
+              console.log('📅 Clicando na aba HORÁRIOS');
               setActiveTab('schedule');
+              console.log('📅 DEPOIS: mudando para = schedule');
             }}
             className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
               activeTab === 'schedule'
                 ? 'border-sapere-orange text-sapere-orange bg-orange-50'
                 : 'border-transparent text-gray-500 hover:text-gray-700'
             }`}
+            style={{
+              position: 'relative',
+              zIndex: 10,
+              cursor: 'pointer'
+            }}
           >
             <div className="flex items-center space-x-2">
               <Calendar className="h-4 w-4" />
@@ -349,15 +387,25 @@ const TherapistDashboard: React.FC = () => {
             </div>
           </button>
           <button
-            onClick={() => {
-              console.log('Clicando na aba Estatísticas, aba atual:', activeTab);
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('📊 ANTES: aba atual =', activeTab);
+              console.log('📊 Clicando na aba ESTATÍSTICAS');
               setActiveTab('stats');
+              console.log('📊 DEPOIS: mudando para = stats');
             }}
             className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
               activeTab === 'stats'
                 ? 'border-sapere-orange text-sapere-orange bg-orange-50'
                 : 'border-transparent text-gray-500 hover:text-gray-700'
             }`}
+            style={{
+              position: 'relative',
+              zIndex: 10,
+              cursor: 'pointer'
+            }}
           >
             <div className="flex items-center space-x-2">
               <BarChart3 className="h-4 w-4" />

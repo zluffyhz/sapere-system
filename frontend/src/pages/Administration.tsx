@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { AuthContext } from '@/context/AuthContext';
 import { adminAPI } from '@/services/api';
 import Layout from '@/components/common/Layout';
@@ -9,6 +9,14 @@ import UserManagementTable from '@/components/admin/UserManagementTable';
 const Administration: React.FC = () => {
   const { user } = useContext(AuthContext);
   const [activeTab, setActiveTab] = useState<'users' | 'therapists' | 'settings'>('users');
+
+  // Debug das abas - detectar mudanças
+  useEffect(() => {
+    console.log('=== DEBUG ABAS ADMINISTRATION ===');
+    console.log('Aba ativa atual:', activeTab);
+    console.log('Timestamp:', new Date().toLocaleTimeString());
+    console.log('===================================');
+  }, [activeTab]);
   const [showCreateTherapist, setShowCreateTherapist] = useState(false);
   const [showCreateUser, setShowCreateUser] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -102,12 +110,25 @@ const Administration: React.FC = () => {
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log(`🔄 ANTES: aba atual = ${activeTab}`);
+                    console.log(`🔄 Clicando na aba ${tab.label.toUpperCase()}`);
+                    setActiveTab(tab.id as any);
+                    console.log(`🔄 DEPOIS: mudando para = ${tab.id}`);
+                  }}
                   className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
                     activeTab === tab.id
                       ? 'border-blue-500 text-blue-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
+                  style={{
+                    position: 'relative',
+                    zIndex: 10,
+                    cursor: 'pointer'
+                  }}
                 >
                   <span className="mr-2">{tab.icon}</span>
                   {tab.label}

@@ -78,6 +78,14 @@ interface PatientFormData {
 const PatientModal: React.FC<PatientModalProps> = ({ patient, onSave, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('basicos');
+
+  // Debug das abas - detectar mudanças
+  useEffect(() => {
+    console.log('=== DEBUG ABAS PATIENT MODAL ===');
+    console.log('Aba ativa atual:', activeTab);
+    console.log('Timestamp:', new Date().toLocaleTimeString());
+    console.log('==================================');
+  }, [activeTab]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   
   const [formData, setFormData] = useState<PatientFormData>({
@@ -999,12 +1007,25 @@ const PatientModal: React.FC<PatientModalProps> = ({ patient, onSave, onClose })
                 return (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      console.log(`📋 ANTES: aba atual = ${activeTab}`);
+                      console.log(`📋 Clicando na aba ${tab.label.toUpperCase()}`);
+                      setActiveTab(tab.id);
+                      console.log(`📋 DEPOIS: mudando para = ${tab.id}`);
+                    }}
                     className={`py-3 px-4 text-sm font-medium rounded-t-lg flex items-center gap-2 ${
                       activeTab === tab.id
                         ? 'text-sapere-brown border-b-2 border-sapere-orange bg-orange-50'
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                     }`}
+                    style={{
+                      position: 'relative',
+                      zIndex: 10,
+                      cursor: 'pointer'
+                    }}
                   >
                     <Icon className="h-4 w-4" />
                     {tab.label}

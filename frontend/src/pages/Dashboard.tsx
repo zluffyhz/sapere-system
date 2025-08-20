@@ -5,6 +5,7 @@ import DashboardStats from '@/components/dashboard/DashboardStats';
 import { useDashboard } from '@/context/DashboardContext';
 import { useAuth } from '@/context/AuthContext';
 import { healthCheck, debugAPI, protectedAPI } from '@/services/api';
+import SimpleTabTest from '@/components/test/SimpleTabTest';
 
 const Dashboard: React.FC = () => {
   const { todaySessions, recentActivities, loading, refreshData } = useDashboard();
@@ -107,6 +108,21 @@ const Dashboard: React.FC = () => {
           {(loading || loadingAPI) ? 'Atualizando...' : 'Atualizar'}
         </button>
       </div>
+
+      {/* TESTE DE ABAS - REMOVER APÓS CORREÇÃO */}
+      <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+        <div className="flex">
+          <div className="flex-shrink-0">
+            <AlertCircle className="h-5 w-5 text-yellow-400" />
+          </div>
+          <div className="ml-3">
+            <p className="text-sm text-yellow-700">
+              <strong>TESTE DE ABAS:</strong> Componente de teste para verificar funcionalidade das abas
+            </p>
+          </div>
+        </div>
+      </div>
+      <SimpleTabTest />
 
       {/* Cards de Resumo Estatístico */}
       <DashboardStats />
