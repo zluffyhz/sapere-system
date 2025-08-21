@@ -1,4 +1,5 @@
 // Página para gerenciar anamneses compartilhadas
+"use client";
 
 import React, { useState, useEffect } from 'react';
 import { 

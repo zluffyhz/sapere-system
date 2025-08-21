@@ -1,4 +1,6 @@
 // Modal completo para criação e edição de pacientes
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import { 
   User, 

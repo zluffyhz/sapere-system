@@ -6,13 +6,15 @@ const isProduction = process.env.NODE_ENV === 'production' ||
                     window.location.hostname.includes('vercel.app') || 
                     window.location.hostname !== 'localhost';
 
-// URL base dinâmica baseada no ambiente
-const API_BASE_URL = isProduction 
-  ? 'https://sapere-system-production.up.railway.app'
-  : 'http://localhost:3002';
+// URL base usando NEXT_PUBLIC_API_URL ou fallback
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 
+  (isProduction 
+    ? 'https://sapere-system-production.up.railway.app'
+    : 'http://localhost:3002');
 
 console.log('🔧 ENVIRONMENT:', isProduction ? 'PRODUCTION' : 'DEVELOPMENT');
 console.log('🔧 API_BASE_URL:', API_BASE_URL);
+console.log('🔧 NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL);
 console.log('🔧 HOSTNAME:', window.location.hostname);
 console.log('🔧 VITE_API_URL:', (import.meta as any).env.VITE_API_URL);
 
@@ -261,6 +263,13 @@ export const authAPI = {
   verifyToken: async (): Promise<{ valid: boolean; user: User }> => {
     const endpoint = getEndpoint('/auth/verify');
     console.log('🧪 VERIFYING TOKEN:', endpoint);
+    const response = await api.get(endpoint);
+    return response.data;
+  },
+
+  getMe: async (): Promise<User> => {
+    const endpoint = getEndpoint('/auth/me');
+    console.log('👤 GETTING USER INFO:', endpoint);
     const response = await api.get(endpoint);
     return response.data;
   },

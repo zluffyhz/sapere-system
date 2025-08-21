@@ -179,13 +179,51 @@ router.get('/verify', async (req: Request, res: Response) => {
   }
 });
 
+// Rota GET /me para informações do usuário autenticado
+router.get('/me', async (req: Request, res: Response) => {
+  try {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({
+        error: 'Token não fornecido'
+      });
+    }
+    
+    const token = authHeader.substring(7);
+    const jwtSecret = process.env.JWT_SECRET;
+    
+    if (!jwtSecret) {
+      return res.status(500).json({
+        error: 'Erro de configuração do servidor'
+      });
+    }
+    
+    const decoded = jwt.verify(token, jwtSecret) as JWTPayload;
+    
+    res.json({
+      id: decoded.id,
+      email: decoded.email,
+      role: decoded.role,
+      name: decoded.name,
+      status: 'active'
+    });
+    
+  } catch (error) {
+    res.status(401).json({
+      error: 'Token inválido ou expirado'
+    });
+  }
+});
+
 // Rota de teste (remover em produção final)
 router.get('/test', (req: Request, res: Response) => {
   res.json({
     message: 'Rota de autenticação funcionando',
     endpoints: {
       login: 'POST /api/auth/login',
-      verify: 'GET /api/auth/verify'
+      verify: 'GET /api/auth/verify',
+      me: 'GET /api/auth/me'
     }
   });
 });
