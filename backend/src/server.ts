@@ -131,13 +131,13 @@ app.get('/', (req, res) => {
   });
 });
 
-// ✅ Healthcheck simples
-app.get("/health", (req, res) => {
+// ✅ Endpoints esperados pelo front (adicione ANTES do 404)
+app.get("/health", (_req, res) => {
   return res.json({ ok: true });
 });
 
-// ✅ /me mínimo só para destravar o front
-app.get("/me", (req, res) => {
+app.get("/me", (_req, res) => {
+  // dummy só para destravar as abas; depois vc liga na sua auth real
   return res.json({
     user: { id: "u_1", name: "Usuário", email: "user@example.com" }
   });
