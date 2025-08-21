@@ -131,6 +131,18 @@ app.get('/', (req, res) => {
   });
 });
 
+// ✅ Healthcheck simples
+app.get("/health", (req, res) => {
+  return res.json({ ok: true });
+});
+
+// ✅ /me mínimo só para destravar o front
+app.get("/me", (req, res) => {
+  return res.json({
+    user: { id: "u_1", name: "Usuário", email: "user@example.com" }
+  });
+});
+
 // Tratamento de rotas não encontradas
 app.use((req, res) => {
   res.status(404).json({
