@@ -131,6 +131,19 @@ app.get('/', (req, res) => {
   });
 });
 
+// === ALIAS NA RAIZ (fora de /api) — ADICIONE ANTES DO 404 ===
+app.get("/health", (_req, res) => {
+  return res.json({ ok: true });
+});
+
+app.get("/me", (_req, res) => {
+  // Dummy só para destravar as abas. Depois você pode trocar por auth real.
+  return res.json({
+    user: { id: "u_1", name: "Usuário", email: "user@example.com" }
+  });
+});
+// === FIM DOS ALIAS ===
+
 // Tratamento de rotas não encontradas
 app.use((req, res) => {
   res.status(404).json({
