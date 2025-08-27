@@ -2,6 +2,7 @@
   "name": "sapere-frontend",
   "version": "1.0.0",
   "description": "Sistema de gestão para clínica de neurodivergentes Sapere - Frontend",
+  "type": "module",
   "private": true,
   "scripts": {
     "dev": "vite",

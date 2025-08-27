@@ -14,14 +14,16 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true,
+    historyApiFallback: true,
   },
   preview: {
     port: 5173,
     host: true,
+    historyApiFallback: true,
   },
   build: {
     outDir: 'dist',
-    sourcemap: process.env.NODE_ENV === 'development',
+    sourcemap: false,
     chunkSizeWarningLimit: 1600,
     minify: 'esbuild',
     rollupOptions: {
@@ -36,8 +38,10 @@ export default defineConfig({
     },
     assetsDir: 'assets',
     cssCodeSplit: true,
+    emptyOutDir: true,
   },
   esbuild: {
     logOverride: { 'this-is-undefined-in-esm': 'silent' }
-  }
+  },
+  base: './'
 })
