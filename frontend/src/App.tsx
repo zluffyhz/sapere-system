@@ -122,21 +122,20 @@ const AppContent: React.FC = () => {
   }
 
   return (
-    <Router>
-      <Routes>
-        {/* Rota pública de login */}
-        <Route 
-          path="/login" 
-          element={isAuthenticated ? <Navigate to="/" /> : <Login />} 
-        />
-        
-        {/* Rotas protegidas */}
-        <Route
-          path="/*"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <Routes>
+    <Routes>
+      {/* Rota pública de login */}
+      <Route 
+        path="/login" 
+        element={isAuthenticated ? <Navigate to="/" /> : <Login />} 
+      />
+      
+      {/* Rotas protegidas */}
+      <Route
+        path="/*"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Routes>
                   {/* Dashboard - todos podem acessar */}
                   <Route path="/" element={<DashboardReal />} />
                   
@@ -277,8 +276,7 @@ const AppContent: React.FC = () => {
             </ProtectedRoute>
           }
         />
-      </Routes>
-    </Router>
+    </Routes>
   );
 };
 
@@ -288,7 +286,9 @@ const App: React.FC = () => {
       <SystemNotificationsProvider>
         <DashboardProvider>
           <NotificationProvider>
-            <AppContent />
+            <Router>
+              <AppContent />
+            </Router>
           </NotificationProvider>
         </DashboardProvider>
       </SystemNotificationsProvider>
