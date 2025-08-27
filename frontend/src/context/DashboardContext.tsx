@@ -3,7 +3,8 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import mockAppointmentsAPI from '@/services/mockAppointments';
 import mockPatientsAPI from '@/services/mockPatients';
 import mockAnamneseAPI from '@/services/mockAnamnese';
-import type { Appointment, Patient } from '@/types';
+import type { Patient } from '@/types';
+import type { Appointment } from '@/types/appointments';
 
 interface DashboardData {
   totalPatients: number;
@@ -106,18 +107,18 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
 
       // Calcular estatísticas
       const appointmentsToday = appointments.filter((apt: Appointment) => {
-        const aptDate = new Date(apt.appointment_date || apt.inicio);
+        const aptDate = new Date(apt.inicio);
         return aptDate >= todayStart && aptDate < new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
       }).length;
 
       const appointmentsThisWeek = appointments.filter((apt: Appointment) => {
-        const aptDate = new Date(apt.appointment_date || apt.inicio);
+        const aptDate = new Date(apt.inicio);
         return aptDate >= weekStart;
       }).length;
 
       const recordsThisMonth = appointments.filter((apt: Appointment) => {
-        const aptDate = new Date(apt.appointment_date || apt.inicio);
-        return aptDate >= monthStart && (apt.status === 'completed' || apt.status === 'atendido');
+        const aptDate = new Date(apt.inicio);
+        return aptDate >= monthStart && (apt.status === 'atendido');
       }).length;
 
       const anamnesisThisMonth = anamneses.filter((anamnesis: any) => {
@@ -132,18 +133,18 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
       const last1m = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
       const therapiesCompleted24h = appointments.filter((apt: Appointment) => {
-        const aptDate = new Date(apt.appointment_date || apt.inicio);
-        return (apt.status === 'completed' || apt.status === 'atendido') && aptDate >= last24h;
+        const aptDate = new Date(apt.inicio);
+        return apt.status === 'atendido' && aptDate >= last24h;
       }).length;
 
       const therapiesCompleted7d = appointments.filter((apt: Appointment) => {
-        const aptDate = new Date(apt.appointment_date || apt.inicio);
-        return (apt.status === 'completed' || apt.status === 'atendido') && aptDate >= last7d;
+        const aptDate = new Date(apt.inicio);
+        return apt.status === 'atendido' && aptDate >= last7d;
       }).length;
 
       const therapiesCompleted1m = appointments.filter((apt: Appointment) => {
-        const aptDate = new Date(apt.appointment_date || apt.inicio);
-        return (apt.status === 'completed' || apt.status === 'atendido') && aptDate >= last1m;
+        const aptDate = new Date(apt.inicio);
+        return apt.status === 'atendido' && aptDate >= last1m;
       }).length;
 
       setData({
