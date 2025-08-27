@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "@supabase/mcp-server-supabase": "^0.4.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0"
   }
 }

@@ -118,6 +118,16 @@ app.get('/', (req, res) => {
         version: '1.0.0'
     });
 });
+// ✅ Endpoints esperados pelo front (adicione ANTES do 404)
+app.get("/health", (_req, res) => {
+    return res.json({ ok: true });
+});
+app.get("/me", (_req, res) => {
+    // dummy só para destravar as abas; depois vc liga na sua auth real
+    return res.json({
+        user: { id: "u_1", name: "Usuário", email: "user@example.com" }
+    });
+});
 // Tratamento de rotas não encontradas
 app.use((req, res) => {
     res.status(404).json({
