@@ -62,6 +62,38 @@ const PatientsReal: React.FC = () => {
       const savedPatients = localStorage.getItem('sapere_patients');
       if (savedPatients) {
         setPatients(JSON.parse(savedPatients));
+      } else {
+        // Dados mock para demonstração (importante para que os botões apareçam)
+        const mockPatients: Patient[] = [
+          {
+            id: '1',
+            name: 'João Silva',
+            email: 'joao@email.com',
+            phone: '(11) 99999-9999',
+            birthDate: '2010-05-15',
+            responsible: 'Maria Silva',
+            responsiblePhone: '(11) 88888-8888',
+            diagnosis: 'Autismo Leve',
+            notes: 'Paciente colaborativo',
+            status: 'active',
+            createdAt: new Date().toISOString()
+          },
+          {
+            id: '2', 
+            name: 'Ana Costa',
+            email: 'ana@email.com',
+            phone: '(11) 77777-7777',
+            birthDate: '2012-03-20',
+            responsible: 'Carlos Costa',
+            responsiblePhone: '(11) 66666-6666',
+            diagnosis: 'TDAH',
+            notes: 'Sessões semanais',
+            status: 'active',
+            createdAt: new Date().toISOString()
+          }
+        ];
+        localStorage.setItem('sapere_patients', JSON.stringify(mockPatients));
+        setPatients(mockPatients);
       }
     } catch (err) {
       error('Erro ao carregar pacientes');
