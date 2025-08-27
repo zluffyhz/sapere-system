@@ -76,6 +76,51 @@ const AnamneseUpload: React.FC = () => {
       const saved = localStorage.getItem('sapere_anamnese_files');
       if (saved) {
         setAnamneses(JSON.parse(saved));
+      } else {
+        // Dados mock para demonstração
+        const mockAnamneses: AnamneseFile[] = [
+          {
+            id: '1',
+            patientId: '1',
+            patientName: 'João Silva',
+            fileName: 'anamnese_joao_inicial.pdf',
+            fileType: 'application/pdf',
+            fileSize: 1024000,
+            fileData: 'data:application/pdf;base64,mock_data',
+            uploadDate: new Date().toISOString(),
+            therapist: user?.name || 'Dr. Admin',
+            description: 'Anamnese inicial - primeira consulta',
+            status: 'reviewed'
+          },
+          {
+            id: '2',
+            patientId: '2', 
+            patientName: 'Ana Costa',
+            fileName: 'avaliacao_fono_ana.docx',
+            fileType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            fileSize: 512000,
+            fileData: 'data:application/docx;base64,mock_data',
+            uploadDate: new Date(Date.now() - 86400000).toISOString(),
+            therapist: 'Dra. Maria Santos',
+            description: 'Avaliação fonoaudiológica completa',
+            status: 'approved'
+          },
+          {
+            id: '3',
+            patientId: '1',
+            patientName: 'João Silva', 
+            fileName: 'evolucao_terapia_ocupacional.pdf',
+            fileType: 'application/pdf',
+            fileSize: 768000,
+            fileData: 'data:application/pdf;base64,mock_data',
+            uploadDate: new Date(Date.now() - 172800000).toISOString(),
+            therapist: 'Dr. Carlos Mendes',
+            description: 'Relatório de evolução - 3 meses de terapia',
+            status: 'uploaded'
+          }
+        ];
+        localStorage.setItem('sapere_anamnese_files', JSON.stringify(mockAnamneses));
+        setAnamneses(mockAnamneses);
       }
     } catch (err) {
       error('Erro ao carregar anamneses');

@@ -74,6 +74,51 @@ const AppointmentsReal: React.FC = () => {
       const savedAppointments = localStorage.getItem('sapere_appointments');
       if (savedAppointments) {
         setAppointments(JSON.parse(savedAppointments));
+      } else {
+        // Dados mock para demonstração
+        const mockAppointments: Appointment[] = [
+          {
+            id: '1',
+            patientName: 'João Silva',
+            patientPhone: '(11) 99999-9999',
+            date: format(new Date(), 'yyyy-MM-dd'),
+            time: '09:00',
+            duration: 60,
+            service: 'Terapia Ocupacional',
+            therapist: 'Dr. Carlos Mendes',
+            status: 'scheduled',
+            notes: 'Primeira sessão',
+            createdAt: new Date().toISOString()
+          },
+          {
+            id: '2',
+            patientName: 'Ana Costa', 
+            patientPhone: '(11) 77777-7777',
+            date: format(new Date(Date.now() + 86400000), 'yyyy-MM-dd'), // amanhã
+            time: '14:00',
+            duration: 60,
+            service: 'Fonoaudiologia',
+            therapist: 'Dra. Maria Santos',
+            status: 'confirmed',
+            notes: 'Avaliação de fala',
+            createdAt: new Date().toISOString()
+          },
+          {
+            id: '3',
+            patientName: 'Pedro Oliveira',
+            patientPhone: '(11) 88888-8888', 
+            date: format(new Date(Date.now() - 86400000), 'yyyy-MM-dd'), // ontem
+            time: '10:30',
+            duration: 45,
+            service: 'Psicologia',
+            therapist: 'Dr. João Ferreira',
+            status: 'completed',
+            notes: 'Sessão realizada com sucesso',
+            createdAt: new Date().toISOString()
+          }
+        ];
+        localStorage.setItem('sapere_appointments', JSON.stringify(mockAppointments));
+        setAppointments(mockAppointments);
       }
     } catch (err) {
       error('Erro ao carregar agendamentos');

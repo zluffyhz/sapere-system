@@ -57,6 +57,48 @@ const CommunicationReal: React.FC = () => {
       const saved = localStorage.getItem('sapere_communications');
       if (saved) {
         setCommunications(JSON.parse(saved));
+      } else {
+        // Dados mock para demonstração
+        const mockCommunications: Communication[] = [
+          {
+            id: '1',
+            patientName: 'João Silva',
+            type: 'whatsapp',
+            subject: 'Confirmação de consulta',
+            content: 'Confirmando presença na consulta de amanhã às 09:00.',
+            direction: 'outgoing',
+            status: 'sent',
+            createdAt: new Date().toISOString(),
+            createdBy: user?.name || 'Admin',
+            contactInfo: '(11) 99999-9999'
+          },
+          {
+            id: '2',
+            patientName: 'Ana Costa',
+            type: 'email',
+            subject: 'Relatório de sessão',
+            content: 'Segue em anexo o relatório da sessão de hoje. A paciente apresentou ótima evolução.',
+            direction: 'outgoing', 
+            status: 'sent',
+            createdAt: new Date(Date.now() - 3600000).toISOString(),
+            createdBy: user?.name || 'Admin',
+            contactInfo: 'ana@email.com'
+          },
+          {
+            id: '3',
+            patientName: 'Maria Silva',
+            type: 'call',
+            subject: 'Reagendamento',
+            content: 'Paciente solicitou reagendamento da consulta da próxima semana.',
+            direction: 'incoming',
+            status: 'received',
+            createdAt: new Date(Date.now() - 7200000).toISOString(),
+            createdBy: 'Recepção',
+            contactInfo: '(11) 88888-8888'
+          }
+        ];
+        localStorage.setItem('sapere_communications', JSON.stringify(mockCommunications));
+        setCommunications(mockCommunications);
       }
     } catch (err) {
       error('Erro ao carregar comunicações');
