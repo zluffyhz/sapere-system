@@ -103,18 +103,21 @@ const DashboardReal: React.FC = () => {
       {/* Directus-Inspired Header */}
       <div className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-sapere-orange to-orange-600 rounded-xl shadow-md">
-                <Activity className="h-6 w-6 text-white" />
+          <div className="flex justify-between items-center py-8">
+            <div className="flex items-center space-x-6">
+              <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-sapere-orange via-orange-500 to-orange-700 rounded-2xl shadow-lg transform hover:scale-105 transition-transform duration-200">
+                <Activity className="h-8 w-8 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-                  {getGreeting()}, {user?.name?.split(' ')[0]}
+                <h1 className="text-4xl font-bold text-gray-900 tracking-tight mb-1">
+                  {getGreeting()}, {user?.name?.split(' ')[0]}! 🌟
                 </h1>
-                <p className="text-gray-500 font-medium">
+                <p className="text-lg text-gray-500 font-medium">
                   {format(new Date(), "EEEE, dd 'de' MMMM", { locale: ptBR })} · {format(new Date(), 'HH:mm')}
                 </p>
+                <div className="mt-2 px-3 py-1 bg-gradient-to-r from-green-100 to-green-50 rounded-full inline-block">
+                  <span className="text-sm font-semibold text-green-700">Sistema Operacional ✅</span>
+                </div>
               </div>
             </div>
             <div className="flex items-center space-x-3">
