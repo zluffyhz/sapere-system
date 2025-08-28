@@ -520,6 +520,7 @@ const PatientsReal: React.FC = () => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };
