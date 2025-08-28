@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sapere - Pacientes</title>
+    <script>
+        // Redirecionar para a raiz e forçar React Router a carregar a rota
+        window.location.href = '/';
+        setTimeout(() => {
+            if (window.history && window.history.pushState) {
+                window.history.pushState(null, '', '/patients');
+                window.location.reload();
+            }
+        }, 100);
+    </script>
+</head>
+<body>
+    <p>Redirecionando para pacientes...</p>
+</body>
+</html>
