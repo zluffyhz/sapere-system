@@ -1,44 +1,13 @@
 {
-  "version": 2,
   "buildCommand": "cd frontend && npm run build",
   "outputDirectory": "frontend/dist",
-  "installCommand": "cd frontend && npm install",
-  "rewrites": [
+  "routes": [
     {
-      "source": "/api/(.*)",
-      "destination": "https://sapere-system-production.up.railway.app/api/$1"
+      "handle": "filesystem"
     },
     {
-      "source": "/patients",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/appointments", 
-      "destination": "/index.html"
-    },
-    {
-      "source": "/anamnese",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/communication",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/therapists",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/administration",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/login",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
