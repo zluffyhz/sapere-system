@@ -99,28 +99,41 @@ const DashboardReal: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 fade-in">
-      {/* Professional Dashboard Header */}
-      <div className="bg-white border-b border-gray-200 pb-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              {getGreeting()}, {user?.name?.split(' ')[0]}
-            </h1>
-            <p className="text-sm text-gray-600 mt-1">
-              {format(new Date(), "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })} · {format(new Date(), 'HH:mm')}
-            </p>
-          </div>
-          <div className="flex items-center space-x-4">
-            {stats.todayAppointments > 0 && (
-              <div className="flex items-center space-x-2 bg-sapere-orange/10 text-sapere-orange px-3 py-1 rounded-full text-sm font-medium">
-                <Calendar className="h-4 w-4" />
-                <span>{stats.todayAppointments} consultas hoje</span>
+    <div className="min-h-screen bg-gray-50">
+      {/* Directus-Inspired Header */}
+      <div className="bg-white shadow-sm border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-6">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-sapere-orange to-orange-600 rounded-xl shadow-md">
+                <Activity className="h-6 w-6 text-white" />
               </div>
-            )}
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+                  {getGreeting()}, {user?.name?.split(' ')[0]}
+                </h1>
+                <p className="text-gray-500 font-medium">
+                  {format(new Date(), "EEEE, dd 'de' MMMM", { locale: ptBR })} · {format(new Date(), 'HH:mm')}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              {stats.todayAppointments > 0 && (
+                <div className="flex items-center space-x-2 bg-sapere-orange text-white px-4 py-2 rounded-lg font-semibold shadow-md">
+                  <Calendar className="h-4 w-4" />
+                  <span>{stats.todayAppointments} consultas hoje</span>
+                </div>
+              )}
+              <div className="w-8 h-8 bg-sapere-orange rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md">
+                {user?.name?.charAt(0).toUpperCase()}
+              </div>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Directus-Style Content Container */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
       {/* Cards de Estatísticas */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
