@@ -180,150 +180,119 @@ const PatientsReal: React.FC = () => {
   );
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-sapere-orange to-sapere-yellow p-8 rounded-2xl text-white shadow-xl">
-        <div className="flex justify-between items-center">
-          <div className="space-y-2">
-            <div className="flex items-center space-x-3">
-              <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
-                <Users className="h-8 w-8" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold">Pacientes</h1>
-                <p className="text-white/90">Gerencie os pacientes da clínica</p>
-              </div>
+    <div className="space-y-6 fade-in">
+      {/* Professional Medical Header */}
+      <div className="bg-white border-b border-gray-200 pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center justify-center w-10 h-10 bg-sapere-orange/10 rounded-lg">
+              <Users className="h-6 w-6 text-sapere-orange" />
             </div>
-            <div className="flex items-center space-x-4 text-sm">
-              <span className="bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm">
-                Total: {patients.length}
-              </span>
-              <span className="bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm">
-                Ativos: {patients.filter(p => p.status === 'active').length}
-              </span>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Pacientes</h1>
+              <p className="text-sm text-gray-600">Gestão de pacientes da clínica</p>
             </div>
           </div>
-          <button
-            onClick={() => setShowModal(true)}
-            className="bg-white text-sapere-orange hover:bg-gray-50 font-semibold py-3 px-6 rounded-xl flex items-center space-x-2 transition-all duration-200 hover:scale-105 hover:shadow-lg animate-bounce-in"
-          >
-            <Plus className="h-5 w-5" />
-            <span>Novo Paciente</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Barra de Pesquisa */}
-      <div className="card p-4">
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Pesquisar pacientes por nome ou telefone..."
-            className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-sapere-orange focus:ring-0 transition-colors duration-200 text-lg"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          {searchTerm && (
-            <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-              <span className="bg-sapere-orange text-white px-2 py-1 rounded-full text-xs">
-                {filteredPatients.length} encontrado(s)
-              </span>
+          <div className="flex items-center space-x-3">
+            <div className="hidden sm:flex items-center space-x-4 text-sm text-gray-600">
+              <span>Total: <span className="font-semibold text-gray-900">{patients.length}</span></span>
+              <span>Ativos: <span className="font-semibold text-green-600">{patients.filter(p => p.status === 'active').length}</span></span>
             </div>
-          )}
+            <button
+              onClick={() => setShowModal(true)}
+              className="btn-primary flex items-center space-x-2"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Novo Paciente</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="card hover-lift bg-gradient-to-br from-white to-blue-50">
-          <div className="flex items-center justify-between">
+      {/* Professional Search and Filters */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Search */}
+        <div className="lg:col-span-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Buscar por nome ou telefone"
+              className="input-field pl-10"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            {searchTerm && (
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                <span className="status-badge bg-sapere-orange text-white">
+                  {filteredPatients.length}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {/* Quick Stats */}
+        <div className="card-compact">
+          <div className="flex items-center space-x-3">
+            <Users className="h-5 w-5 text-sapere-orange" />
             <div>
-              <p className="text-sm font-medium text-gray-600">Total de Pacientes</p>
-              <p className="text-3xl font-bold text-sapere-brown animate-bounce-in">{patients.length}</p>
-              <p className="text-xs text-gray-500 mt-1">Todos os pacientes</p>
-            </div>
-            <div className="p-3 bg-sapere-orange/10 rounded-full">
-              <Users className="h-8 w-8 text-sapere-orange" />
+              <p className="text-sm font-medium text-gray-900">{patients.length}</p>
+              <p className="text-xs text-gray-500">Total</p>
             </div>
           </div>
         </div>
         
-        <div className="card hover-lift bg-gradient-to-br from-white to-green-50">
-          <div className="flex items-center justify-between">
+        <div className="card-compact">
+          <div className="flex items-center space-x-3">
+            <Activity className="h-5 w-5 text-green-600" />
             <div>
-              <p className="text-sm font-medium text-gray-600">Pacientes Ativos</p>
-              <p className="text-3xl font-bold text-green-600 animate-bounce-in">
-                {patients.filter(p => p.status === 'active').length}
-              </p>
-              <p className="text-xs text-gray-500 mt-1">Em acompanhamento</p>
-            </div>
-            <div className="p-3 bg-green-100 rounded-full">
-              <Activity className="h-8 w-8 text-green-500" />
-            </div>
-          </div>
-        </div>
-
-        <div className="card hover-lift bg-gradient-to-br from-white to-purple-50">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Novos este Mês</p>
-              <p className="text-3xl font-bold text-purple-600 animate-bounce-in">
-                {patients.filter(p => {
-                  const created = new Date(p.createdAt);
-                  const now = new Date();
-                  return created.getMonth() === now.getMonth() && 
-                         created.getFullYear() === now.getFullYear();
-                }).length}
-              </p>
-              <p className="text-xs text-gray-500 mt-1">Este mês</p>
-            </div>
-            <div className="p-3 bg-purple-100 rounded-full">
-              <Calendar className="h-8 w-8 text-purple-500" />
+              <p className="text-sm font-medium text-gray-900">{patients.filter(p => p.status === 'active').length}</p>
+              <p className="text-xs text-gray-500">Ativos</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Lista de Pacientes */}
-      <div className="card">
+      {/* Professional Patient List */}
+      <div className="card p-0">
         {isLoading ? (
-          <div className="flex justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sapere-orange"></div>
+          <div className="flex items-center justify-center py-12">
+            <div className="flex items-center space-x-3">
+              <div className="w-6 h-6 border-2 border-sapere-orange border-t-transparent rounded-full animate-spin"></div>
+              <span className="text-gray-600">Carregando pacientes...</span>
+            </div>
           </div>
         ) : filteredPatients.length === 0 ? (
-          <div className="text-center py-8">
-            <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Users className="h-8 w-8 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
               {searchTerm ? 'Nenhum paciente encontrado' : 'Nenhum paciente cadastrado'}
             </h3>
-            <p className="text-gray-600">
+            <p className="text-gray-600 mb-4">
               {searchTerm ? 'Tente ajustar os termos da pesquisa' : 'Comece cadastrando um novo paciente'}
             </p>
+            {!searchTerm && (
+              <button onClick={() => setShowModal(true)} className="btn-primary">
+                Cadastrar Primeiro Paciente
+              </button>
+            )}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+          <div className="overflow-hidden">
+            <table className="table-professional">
+              <thead>
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Paciente
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Contato
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Responsável
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Ações
-                  </th>
+                  <th>Paciente</th>
+                  <th>Contato</th>
+                  <th>Responsável</th>
+                  <th>Status</th>
+                  <th className="text-right">Ações</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody>
                 {filteredPatients.map((patient) => (
                   <tr key={patient.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">

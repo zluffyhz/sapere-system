@@ -99,36 +99,25 @@ const DashboardReal: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      {/* Cabeçalho com Saudação */}
-      <div className="bg-gradient-to-r from-sapere-orange to-sapere-yellow rounded-2xl p-8 text-white shadow-xl">
-        <div className="flex items-center justify-between">
-          <div className="space-y-2">
-            <div className="flex items-center space-x-4">
-              <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
-                <Activity className="h-8 w-8" />
+    <div className="space-y-6 fade-in">
+      {/* Professional Dashboard Header */}
+      <div className="bg-white border-b border-gray-200 pb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              {getGreeting()}, {user?.name?.split(' ')[0]}
+            </h1>
+            <p className="text-sm text-gray-600 mt-1">
+              {format(new Date(), "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })} · {format(new Date(), 'HH:mm')}
+            </p>
+          </div>
+          <div className="flex items-center space-x-4">
+            {stats.todayAppointments > 0 && (
+              <div className="flex items-center space-x-2 bg-sapere-orange/10 text-sapere-orange px-3 py-1 rounded-full text-sm font-medium">
+                <Calendar className="h-4 w-4" />
+                <span>{stats.todayAppointments} consultas hoje</span>
               </div>
-              <div>
-                <h1 className="text-4xl font-bold">
-                  {getGreeting()}, {user?.name?.split(' ')[0]}! 👋
-                </h1>
-                <p className="text-white/90 text-lg">
-                  Sistema de Gestão da Clínica Sapere
-                </p>
-                <p className="text-white/80 text-sm">
-                  {format(new Date(), "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4 text-sm mt-4">
-              <span className="bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm">
-                <Clock className="h-4 w-4 inline mr-1" />
-                {format(new Date(), 'HH:mm')}
-              </span>
-              <span className="bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm">
-                📅 Hoje: {stats.todayAppointments} consultas
-              </span>
-            </div>
+            )}
           </div>
         </div>
       </div>

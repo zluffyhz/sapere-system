@@ -20,32 +20,72 @@
 }
 
 @layer components {
+  /* Professional Medical UI Components */
   .btn-primary {
-    @apply bg-sapere-orange hover:bg-primary-600 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+    @apply bg-sapere-orange hover:bg-orange-600 text-white font-semibold py-2.5 px-5 rounded-lg border border-sapere-orange hover:border-orange-600 transition-all duration-150 shadow-sm hover:shadow-md;
   }
   
   .btn-secondary {
-    @apply bg-sapere-yellow hover:bg-secondary-500 text-sapere-brown font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+    @apply bg-white hover:bg-gray-50 text-sapere-brown font-semibold py-2.5 px-5 rounded-lg border border-gray-300 hover:border-sapere-orange transition-all duration-150 shadow-sm hover:shadow-md;
   }
   
-  .btn-whatsapp {
-    @apply bg-sapere-whatsapp hover:bg-accent-600 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  .btn-outline {
+    @apply bg-transparent hover:bg-sapere-orange/5 text-sapere-orange font-semibold py-2.5 px-5 rounded-lg border border-sapere-orange transition-all duration-150;
+  }
+  
+  .btn-success {
+    @apply bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-5 rounded-lg border border-green-600 transition-all duration-150 shadow-sm;
+  }
+  
+  .btn-danger {
+    @apply bg-red-600 hover:bg-red-700 text-white font-semibold py-2.5 px-5 rounded-lg border border-red-600 transition-all duration-150 shadow-sm;
   }
   
   .card {
-    @apply bg-white rounded-xl shadow-sm border border-gray-200 p-6;
+    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200;
+  }
+  
+  .card-compact {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-4;
   }
   
   .input-field {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-sapere-orange focus:border-sapere-orange;
+    @apply w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-sapere-orange/20 focus:border-sapere-orange transition-all duration-150 bg-white;
   }
   
   .sidebar-item {
-    @apply flex items-center px-4 py-3 text-gray-700 hover:bg-sapere-orange hover:text-white rounded-lg transition-colors duration-200;
+    @apply flex items-center px-4 py-3 text-gray-700 hover:bg-sapere-orange/10 hover:text-sapere-orange rounded-lg transition-all duration-150 font-medium;
   }
   
   .sidebar-item.active {
-    @apply bg-sapere-orange text-white;
+    @apply bg-sapere-orange/10 text-sapere-orange border-r-4 border-sapere-orange;
+  }
+
+  /* Professional Status Badges */
+  .status-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold;
+  }
+  
+  .status-active { @apply bg-green-100 text-green-800; }
+  .status-pending { @apply bg-yellow-100 text-yellow-800; }
+  .status-inactive { @apply bg-gray-100 text-gray-800; }
+  .status-urgent { @apply bg-red-100 text-red-800; }
+
+  /* Professional Tables */
+  .table-professional {
+    @apply w-full border-collapse;
+  }
+  
+  .table-professional th {
+    @apply px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-gray-200 bg-gray-50;
+  }
+  
+  .table-professional td {
+    @apply px-6 py-4 text-sm text-gray-900 border-b border-gray-100;
+  }
+  
+  .table-professional tr:hover {
+    @apply bg-gray-50;
   }
 
   /* Novas classes para a tela de login */
@@ -123,10 +163,10 @@
     opacity: 0.5 !important;
   }
 
+  /* Professional subtle interactions */
   button:hover:not(:disabled) {
-    opacity: 0.9;
-    transform: translateY(-1px);
-    transition: all 0.2s ease;
+    filter: brightness(0.96);
+    transition: all 0.15s ease;
   }
   
   /* Ensure Links are clickable */
@@ -135,138 +175,67 @@
     z-index: 10 !important;
     cursor: pointer !important;
     pointer-events: auto !important;
-    transition: all 0.2s ease;
-  }
-  
-  a:hover {
-    transform: translateY(-1px);
   }
   
   /* Fix for overlay issues */
   .card {
     z-index: 1 !important;
-    transition: all 0.3s ease;
   }
   
-  .card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* Modal z-index and animations */
+  /* Modal z-index and professional entrance */
   .modal, [role="dialog"] {
     z-index: 50 !important;
-    animation: modal-enter 0.3s ease-out;
+    animation: modal-enter 0.2s ease-out;
   }
 
   @keyframes modal-enter {
     from {
       opacity: 0;
-      transform: scale(0.95) translateY(-10px);
+      transform: scale(0.98);
     }
     to {
       opacity: 1;
-      transform: scale(1) translateY(0);
+      transform: scale(1);
     }
+  }
+
+  /* Subtle fade in for content */
+  .fade-in {
+    animation: fade-in 0.3s ease-out;
   }
 
   @keyframes fade-in {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 
-  .animate-fade-in {
-    animation: fade-in 0.5s ease-out;
-  }
-
-  @keyframes slide-up {
-    from {
-      transform: translateY(100%);
-      opacity: 0;
-    }
-    to {
-      transform: translateY(0);
-      opacity: 1;
-    }
-  }
-
-  .animate-slide-up {
-    animation: slide-up 0.4s ease-out;
-  }
-
-  @keyframes bounce-in {
-    0% {
-      transform: scale(0.3) rotate(-10deg);
-      opacity: 0;
-    }
-    50% {
-      transform: scale(1.05) rotate(2deg);
-    }
-    70% {
-      transform: scale(0.9) rotate(-1deg);
-    }
-    100% {
-      transform: scale(1) rotate(0deg);
-      opacity: 1;
-    }
-  }
-
-  .animate-bounce-in {
-    animation: bounce-in 0.6s ease-out;
-  }
-
-  /* Loading states */
-  .loading-shimmer {
-    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  /* Professional loading state */
+  .loading-professional {
+    background: linear-gradient(90deg, transparent, rgba(249, 115, 22, 0.1), transparent);
     background-size: 200% 100%;
-    animation: loading 1.5s infinite;
+    animation: loading-sweep 1.5s infinite;
   }
 
-  @keyframes loading {
-    0% {
-      background-position: 200% 0;
-    }
-    100% {
-      background-position: -200% 0;
-    }
+  @keyframes loading-sweep {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
   }
 
-  /* Hover effects */
-  .hover-lift {
-    transition: all 0.3s ease;
-  }
-
-  .hover-lift:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 15px 35px rgba(249, 115, 22, 0.15);
-  }
-
-  /* Button improvements */
-  .btn-primary, .btn-secondary {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .btn-primary:hover, .btn-secondary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
-  }
-
-  .btn-primary:active, .btn-secondary:active {
-    transform: translateY(0);
-  }
-
-  /* Focus states */
+  /* Focus states - medical grade accessibility */
   *:focus-visible {
     outline: 2px solid #F97316;
     outline-offset: 2px;
-    border-radius: 4px;
+    box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.1);
+  }
+
+  /* Professional data display */
+  .data-row:nth-child(even) {
+    background-color: rgba(249, 115, 22, 0.02);
+  }
+
+  .data-row:hover {
+    background-color: rgba(249, 115, 22, 0.05);
+    transition: background-color 0.15s ease;
   }
 
   /* Responsive improvements */
