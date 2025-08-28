@@ -125,6 +125,8 @@
 
   button:hover:not(:disabled) {
     opacity: 0.9;
+    transform: translateY(-1px);
+    transition: all 0.2s ease;
   }
   
   /* Ensure Links are clickable */
@@ -133,15 +135,217 @@
     z-index: 10 !important;
     cursor: pointer !important;
     pointer-events: auto !important;
+    transition: all 0.2s ease;
+  }
+  
+  a:hover {
+    transform: translateY(-1px);
   }
   
   /* Fix for overlay issues */
   .card {
     z-index: 1 !important;
+    transition: all 0.3s ease;
   }
   
-  /* Modal z-index */
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Modal z-index and animations */
   .modal, [role="dialog"] {
     z-index: 50 !important;
+    animation: modal-enter 0.3s ease-out;
+  }
+
+  @keyframes modal-enter {
+    from {
+      opacity: 0;
+      transform: scale(0.95) translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.5s ease-out;
+  }
+
+  @keyframes slide-up {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.4s ease-out;
+  }
+
+  @keyframes bounce-in {
+    0% {
+      transform: scale(0.3) rotate(-10deg);
+      opacity: 0;
+    }
+    50% {
+      transform: scale(1.05) rotate(2deg);
+    }
+    70% {
+      transform: scale(0.9) rotate(-1deg);
+    }
+    100% {
+      transform: scale(1) rotate(0deg);
+      opacity: 1;
+    }
+  }
+
+  .animate-bounce-in {
+    animation: bounce-in 0.6s ease-out;
+  }
+
+  /* Loading states */
+  .loading-shimmer {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+  }
+
+  @keyframes loading {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+
+  /* Hover effects */
+  .hover-lift {
+    transition: all 0.3s ease;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 15px 35px rgba(249, 115, 22, 0.15);
+  }
+
+  /* Button improvements */
+  .btn-primary, .btn-secondary {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-primary:hover, .btn-secondary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+  }
+
+  .btn-primary:active, .btn-secondary:active {
+    transform: translateY(0);
+  }
+
+  /* Focus states */
+  *:focus-visible {
+    outline: 2px solid #F97316;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Responsive improvements */
+  @media (max-width: 768px) {
+    .card {
+      padding: 1rem;
+    }
+    
+    .hover-lift:hover {
+      transform: none; /* Disable hover effects on mobile */
+    }
+    
+    .animate-bounce-in {
+      animation: none; /* Reduce animations on mobile */
+    }
+    
+    /* Mobile optimized buttons */
+    .btn-primary, .btn-secondary {
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+    }
+    
+    /* Mobile header adjustments */
+    .text-3xl {
+      font-size: 1.875rem;
+    }
+    
+    .text-2xl {
+      font-size: 1.5rem;
+    }
+  }
+
+  /* Tablet optimizations */
+  @media (min-width: 768px) and (max-width: 1024px) {
+    .grid-cols-1.md\:grid-cols-3 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    
+    .grid-cols-1.md\:grid-cols-3 > :last-child {
+      grid-column: span 2;
+    }
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Better touch targets */
+  @media (pointer: coarse) {
+    button, .btn-primary, .btn-secondary, a {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+
+  /* Dark mode support (future) */
+  @media (prefers-color-scheme: dark) {
+    /* Placeholder for dark mode styles */
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .card {
+      border-width: 2px;
+      border-color: #000;
+    }
+    
+    .btn-primary, .btn-secondary {
+      border: 2px solid #000;
+    }
   }
 }

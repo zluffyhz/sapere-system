@@ -180,63 +180,95 @@ const PatientsReal: React.FC = () => {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-fade-in">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-sapere-brown">Pacientes</h1>
-          <p className="text-gray-600">Gerencie os pacientes da clínica</p>
+      <div className="bg-gradient-to-r from-sapere-orange to-sapere-yellow p-8 rounded-2xl text-white shadow-xl">
+        <div className="flex justify-between items-center">
+          <div className="space-y-2">
+            <div className="flex items-center space-x-3">
+              <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
+                <Users className="h-8 w-8" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold">Pacientes</h1>
+                <p className="text-white/90">Gerencie os pacientes da clínica</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4 text-sm">
+              <span className="bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm">
+                Total: {patients.length}
+              </span>
+              <span className="bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm">
+                Ativos: {patients.filter(p => p.status === 'active').length}
+              </span>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowModal(true)}
+            className="bg-white text-sapere-orange hover:bg-gray-50 font-semibold py-3 px-6 rounded-xl flex items-center space-x-2 transition-all duration-200 hover:scale-105 hover:shadow-lg animate-bounce-in"
+          >
+            <Plus className="h-5 w-5" />
+            <span>Novo Paciente</span>
+          </button>
         </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className="btn-primary flex items-center space-x-2"
-        >
-          <Plus className="h-4 w-4" />
-          <span>Novo Paciente</span>
-        </button>
       </div>
 
       {/* Barra de Pesquisa */}
-      <div className="relative">
-        <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-        <input
-          type="text"
-          placeholder="Pesquisar pacientes..."
-          className="pl-10 input-field"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+      <div className="card p-4">
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Pesquisar pacientes por nome ou telefone..."
+            className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-sapere-orange focus:ring-0 transition-colors duration-200 text-lg"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          {searchTerm && (
+            <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+              <span className="bg-sapere-orange text-white px-2 py-1 rounded-full text-xs">
+                {filteredPatients.length} encontrado(s)
+              </span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="card">
+        <div className="card hover-lift bg-gradient-to-br from-white to-blue-50">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Total de Pacientes</p>
-              <p className="text-2xl font-bold text-sapere-brown">{patients.length}</p>
+              <p className="text-3xl font-bold text-sapere-brown animate-bounce-in">{patients.length}</p>
+              <p className="text-xs text-gray-500 mt-1">Todos os pacientes</p>
             </div>
-            <Users className="h-8 w-8 text-sapere-orange" />
+            <div className="p-3 bg-sapere-orange/10 rounded-full">
+              <Users className="h-8 w-8 text-sapere-orange" />
+            </div>
           </div>
         </div>
         
-        <div className="card">
+        <div className="card hover-lift bg-gradient-to-br from-white to-green-50">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Pacientes Ativos</p>
-              <p className="text-2xl font-bold text-green-600">
+              <p className="text-3xl font-bold text-green-600 animate-bounce-in">
                 {patients.filter(p => p.status === 'active').length}
               </p>
+              <p className="text-xs text-gray-500 mt-1">Em acompanhamento</p>
             </div>
-            <Activity className="h-8 w-8 text-green-500" />
+            <div className="p-3 bg-green-100 rounded-full">
+              <Activity className="h-8 w-8 text-green-500" />
+            </div>
           </div>
         </div>
 
-        <div className="card">
+        <div className="card hover-lift bg-gradient-to-br from-white to-purple-50">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Novos este Mês</p>
-              <p className="text-2xl font-bold text-blue-600">
+              <p className="text-3xl font-bold text-purple-600 animate-bounce-in">
                 {patients.filter(p => {
                   const created = new Date(p.createdAt);
                   const now = new Date();
@@ -244,8 +276,11 @@ const PatientsReal: React.FC = () => {
                          created.getFullYear() === now.getFullYear();
                 }).length}
               </p>
+              <p className="text-xs text-gray-500 mt-1">Este mês</p>
             </div>
-            <Calendar className="h-8 w-8 text-blue-500" />
+            <div className="p-3 bg-purple-100 rounded-full">
+              <Calendar className="h-8 w-8 text-purple-500" />
+            </div>
           </div>
         </div>
       </div>

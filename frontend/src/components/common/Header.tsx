@@ -55,7 +55,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
   };
 
   return (
-    <header className="bg-sapere-yellow border-b-2 border-sapere-orange shadow-lg relative z-50">
+    <header className="bg-sapere-yellow border-b-2 border-sapere-orange shadow-lg relative z-50 backdrop-blur-sm">
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           
@@ -70,21 +70,24 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
                   setIsMobileMenuOpen(!isMobileMenuOpen);
                 }
               }}
-              className="lg:hidden p-2 rounded-md text-sapere-brown hover:bg-sapere-orange/20 transition-colors"
+              className="lg:hidden p-2 rounded-md text-sapere-brown hover:bg-sapere-orange/20 transition-all duration-200 hover:scale-110 active:scale-95"
             >
               <Menu className="h-5 w-5" />
             </button>
 
             {/* Logo */}
-            <Link to="/" className="flex items-center space-x-3">
-              <img 
-                src="/logo-sapere-transparent.svg" 
-                alt="Sapere" 
-                className="h-10 w-10 object-contain rounded-lg shadow-sm"
-              />
+            <Link to="/" className="flex items-center space-x-3 group hover-lift">
+              <div className="relative">
+                <img 
+                  src="/logo-sapere-transparent.svg" 
+                  alt="Sapere" 
+                  className="h-10 w-10 object-contain rounded-lg shadow-sm transition-transform duration-300 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-sapere-orange/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </div>
               <div className="hidden sm:block">
-                <h1 className="text-xl font-bold text-sapere-brown">Sapere</h1>
-                <p className="text-xs text-sapere-brown/70">Centro de Desenvolvimento</p>
+                <h1 className="text-xl font-bold text-sapere-brown group-hover:text-sapere-orange transition-colors duration-200">Sapere</h1>
+                <p className="text-xs text-sapere-brown/70 group-hover:text-sapere-brown/90 transition-colors duration-200">Centro de Desenvolvimento</p>
               </div>
             </Link>
 
@@ -99,18 +102,18 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
                 href="https://wa.me/5592992305850"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center space-x-1 px-3 py-1 bg-sapere-whatsapp text-white rounded-full text-xs font-medium hover:bg-green-600 transition-colors"
+                className="group flex items-center space-x-1 px-3 py-1 bg-sapere-whatsapp text-white rounded-full text-xs font-medium hover:bg-green-600 transition-all duration-200 hover:scale-105 hover:shadow-lg"
                 title="WhatsApp Sapere"
               >
-                <MessageCircle className="h-3 w-3" />
+                <MessageCircle className="h-3 w-3 transition-transform duration-200 group-hover:scale-110" />
                 <span className="hidden xl:inline">WhatsApp</span>
               </a>
               <a
                 href="mailto:Sapere.recepcao@gmail.com"
-                className="flex items-center space-x-1 px-3 py-1 bg-sapere-brown text-white rounded-full text-xs font-medium hover:bg-amber-800 transition-colors"
+                className="group flex items-center space-x-1 px-3 py-1 bg-sapere-brown text-white rounded-full text-xs font-medium hover:bg-amber-800 transition-all duration-200 hover:scale-105 hover:shadow-lg"
                 title="Email Sapere"
               >
-                <Mail className="h-3 w-3" />
+                <Mail className="h-3 w-3 transition-transform duration-200 group-hover:scale-110" />
                 <span className="hidden xl:inline">Email</span>
               </a>
             </div>
@@ -122,26 +125,28 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
             <div className="relative">
               <button
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                className="flex items-center space-x-3 p-2 rounded-lg hover:bg-sapere-orange/20 transition-colors"
+                className="group flex items-center space-x-3 p-2 rounded-lg hover:bg-sapere-orange/20 transition-all duration-200 hover:scale-105"
               >
                 <div className="flex items-center space-x-2">
-                  <div className="h-8 w-8 bg-sapere-orange rounded-full flex items-center justify-center shadow-md">
+                  <div className="h-8 w-8 bg-sapere-orange rounded-full flex items-center justify-center shadow-md transition-all duration-200 group-hover:scale-110 group-hover:shadow-lg">
                     <span className="text-white text-sm font-bold">
                       {user?.name?.charAt(0).toUpperCase()}
                     </span>
                   </div>
                   <div className="hidden sm:block text-left">
-                    <p className="text-sm font-semibold text-sapere-brown">
+                    <p className="text-sm font-semibold text-sapere-brown group-hover:text-sapere-orange transition-colors duration-200">
                       {user?.name}
                     </p>
                     <div className="flex items-center space-x-1">
-                      <Shield className="h-3 w-3 text-sapere-brown/60" />
-                      <p className="text-xs text-sapere-brown/60">
+                      <Shield className="h-3 w-3 text-sapere-brown/60 group-hover:text-sapere-orange/60 transition-colors duration-200" />
+                      <p className="text-xs text-sapere-brown/60 group-hover:text-sapere-orange/60 transition-colors duration-200">
                         {user?.role && getRoleLabel(user.role)}
                       </p>
                     </div>
                   </div>
-                  <ChevronDown className="h-4 w-4 text-sapere-brown" />
+                  <ChevronDown className={`h-4 w-4 text-sapere-brown transition-all duration-200 ${
+                    isUserMenuOpen ? 'rotate-180 text-sapere-orange' : 'group-hover:text-sapere-orange'
+                  }`} />
                 </div>
               </button>
 
