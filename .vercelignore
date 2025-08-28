@@ -1,0 +1,14 @@
+backend/
+database/
+*.png
+*.js
+test-*
+debug-*
+screenshots/
+node_modules/
+.git/
+*.log
+playwright-report/
+test-results/
+*.md
+!README.md
