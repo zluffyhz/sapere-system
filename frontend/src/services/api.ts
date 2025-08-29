@@ -1,10 +1,9 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { AuthResponse, User, UserRole } from '@/types';
 
-// Detectar ambiente de forma robusta
-const isProduction = process.env.NODE_ENV === 'production' || 
-                    window.location.hostname.includes('vercel.app') || 
-                    window.location.hostname !== 'localhost';
+// Detectar ambiente de forma robusta - FORÇA LOCAL QUANDO EM LOCALHOST
+const isProduction = process.env.NODE_ENV === 'production' && 
+                    !window.location.hostname.includes('localhost');
 
 // URL base usando NEXT_PUBLIC_API_URL ou fallback
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 
