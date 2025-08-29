@@ -9,7 +9,7 @@ const isProduction = process.env.NODE_ENV === 'production' &&
 const API_BASE_URL = (import.meta as any).env.VITE_API_URL || 
   process.env.NEXT_PUBLIC_API_URL || 
   (isProduction 
-    ? 'https://sapere-system-production.up.railway.app'
+    ? '' // Use relative URLs in production (Vercel API routes)
     : 'http://localhost:3002');
 
 console.log('🔧 ENVIRONMENT:', isProduction ? 'PRODUCTION' : 'DEVELOPMENT');
