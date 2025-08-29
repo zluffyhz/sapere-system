@@ -17,6 +17,8 @@ console.log('🔧 API_BASE_URL:', API_BASE_URL);
 console.log('🔧 NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL);
 console.log('🔧 HOSTNAME:', window.location.hostname);
 console.log('🔧 VITE_API_URL:', (import.meta as any).env.VITE_API_URL);
+console.log('🔧 CACHE BUST VERSION: v3.0');
+console.log('🔧 USING VERCEL API ROUTES:', isProduction && API_BASE_URL === '');
 
 // Storage keys
 const STORAGE_KEYS = {
@@ -81,10 +83,11 @@ api.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
     
-    // Adicionar timestamp para evitar cache
+    // Adicionar timestamp para evitar cache - FORCE REFRESH
     config.params = {
       ...config.params,
-      _t: Date.now()
+      _t: Date.now(),
+      _v: 'v3.0-cache-bust'
     };
     
     // Log completo da configuração da requisição
@@ -461,6 +464,16 @@ export const debugAPI = {
 
 // Log ambiente na inicialização
 debugAPI.logEnvironment();
+
+// Force cache clear on version change
+const CACHE_VERSION = 'v3.0-cache-bust';
+const storedVersion = localStorage.getItem('cache_version');
+if (storedVersion !== CACHE_VERSION) {
+  console.log('🗑️ CLEARING CACHE - Version changed from', storedVersion, 'to', CACHE_VERSION);
+  localStorage.clear();
+  sessionStorage.clear();
+  localStorage.setItem('cache_version', CACHE_VERSION);
+}
 
 // Protected API (rotas que requerem autenticação)
 export const protectedAPI = {
