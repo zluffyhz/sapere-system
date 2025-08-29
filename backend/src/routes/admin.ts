@@ -6,6 +6,7 @@ import {
   listAllUsers, 
   updateUserStatus 
 } from '../controllers/adminController';
+import { createUser } from '../controllers/userManagementController';
 
 const router = Router();
 
@@ -20,6 +21,9 @@ router.post('/reset-password', resetUserPassword);
 
 // GET /api/admin/users - Listar todos os usuários
 router.get('/users', listAllUsers);
+
+// POST /api/admin/users - Criar novo usuário
+router.post('/users', createUser);
 
 // PUT /api/admin/users/:userId/status - Alterar status de usuário
 router.put('/users/:userId/status', updateUserStatus);

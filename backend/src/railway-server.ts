@@ -6,6 +6,7 @@ import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes';
 import healthRoutes from './routes/health.routes';
+import adminRoutes from './routes/admin';
 
 // Carregar variáveis de ambiente
 dotenv.config();
@@ -18,6 +19,7 @@ app.set('trust proxy', 1);
 // Configuração de CORS SIMPLIFICADA E FUNCIONAL
 const allowedOrigins = [
   'https://sapere-system.vercel.app',
+  'https://sapere-system-nlswnpxqj-zluffyhzs-projects.vercel.app',
   'http://localhost:5173',
   'http://localhost:5174',
   'http://localhost:3000',
@@ -43,12 +45,17 @@ const corsOptions = {
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
-      // Em produção, ser mais permissivo com Vercel
-      if (process.env.NODE_ENV === 'production' && origin.includes('vercel.app')) {
+      // Em produção, ser mais permissivo com Vercel e netlify
+      if (process.env.NODE_ENV === 'production' && (
+        origin.includes('vercel.app') || 
+        origin.includes('netlify.app') ||
+        origin.includes('sapere-system')
+      )) {
+        console.log('CORS permitido para origem Vercel/Netlify:', origin);
         callback(null, true);
       } else {
         console.log('CORS bloqueado para origem:', origin);
-        callback(null, false); // Mudança importante: false ao invés de Error
+        callback(null, false);
       }
     }
   },
@@ -103,6 +110,7 @@ app.use((req, res, next) => {
 // Rotas
 app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Rate limit específico para login DEPOIS das rotas
 app.use('/api/auth/login', loginLimiter);
