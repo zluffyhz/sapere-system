@@ -59,7 +59,6 @@ const Sidebar: React.FC = () => {
   ];
 
   const testNavigation = [
-    { name: 'Teste de Roles', href: '/test-roles', icon: TestTube },
   ];
 
   const allNavigation = [

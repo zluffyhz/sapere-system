@@ -144,14 +144,7 @@ export class ProductionTestSuite {
       this.log('Dashboard Endpoint', 'error', 'Failed to load dashboard', error);
     }
 
-    // Test other protected endpoints
-    try {
-      const { protectedAPI } = await import('../services/api');
-      await protectedAPI.testRoles();
-      this.log('Role Test Endpoint', 'success', 'Role test passed');
-    } catch (error) {
-      this.log('Role Test Endpoint', 'error', 'Role test failed', error);
-    }
+    // Test other protected endpoints removed (role testing functionality has been deprecated)
   }
 
   private printSummary() {
