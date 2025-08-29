@@ -205,92 +205,31 @@ api.interceptors.response.use(
 // Auth API
 export const authAPI = {
   login: async (loginField: string, password: string, rememberMe = false): Promise<AuthResponse> => {
-    console.log('🔐 MOCK LOGIN - SEMPRE FUNCIONA!');
+    console.log('🔐 REAL LOGIN - Connecting to PostgreSQL backend');
     
-    // MOCK DATA - SISTEMA SEMPRE FUNCIONAL
-    const mockUsers = {
-      'admin@sapere.com.br': {
-        id: '1',
-        email: 'admin@sapere.com.br',
-        name: 'Administrador Sapere',
-        role: 'admin' as UserRole,
-        status: 'active' as any,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      },
-      'teste@sapere.com.br': {
-        id: '2', 
-        email: 'teste@sapere.com.br',
-        name: 'Usuário Teste',
-        role: 'profissional' as UserRole,
-        status: 'active' as any,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
-    };
+    const response = await api.post('/api/auth/login', {
+      login: loginField,
+      password: password
+    });
     
-    const email = loginField.trim().toLowerCase();
-    const user = mockUsers[email as keyof typeof mockUsers];
+    console.log('✅ REAL LOGIN SUCCESSFUL:', response.data);
     
-    if (!user || password !== 'Sapere@2025') {
-      throw new Error('Credenciais inválidas');
-    }
-    
-    const mockToken = `mock_token_${Date.now()}_${Math.random()}`;
-    
-    console.log('✅ MOCK LOGIN SUCCESSFUL:', { user, token: mockToken });
-    
-    return {
-      token: mockToken,
-      user
-    };
+    return response.data;
   },
 
   register: async (email: string, password: string, name: string, role: UserRole = 'profissional'): Promise<AuthResponse> => {
-    console.log('📝 MOCK REGISTER - SEMPRE FUNCIONA!');
+    console.log('📝 REAL REGISTER - Connecting to PostgreSQL backend');
     
-    // Validações básicas
-    if (!email || !password || !name) {
-      throw new Error('Email, senha e nome são obrigatórios');
-    }
+    const response = await api.post('/api/auth/register', { 
+      email, 
+      password, 
+      name, 
+      role 
+    });
     
-    if (password.length < 6) {
-      throw new Error('A senha deve ter pelo menos 6 caracteres');
-    }
+    console.log('✅ REAL REGISTER SUCCESSFUL:', response.data);
     
-    // Verificar se email já existe nos usuários mock
-    const mockUsers = {
-      'admin@sapere.com.br': true,
-      'teste@sapere.com.br': true
-    };
-    
-    const emailLower = email.trim().toLowerCase();
-    if (mockUsers[emailLower as keyof typeof mockUsers]) {
-      throw new Error('Este email já está em uso');
-    }
-    
-    // Simular criação de usuário
-    const newUser = {
-      id: `mock_user_${Date.now()}`,
-      email: emailLower,
-      name: name.trim(),
-      role: role as UserRole,
-      status: 'active' as any,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-    
-    const mockToken = `mock_token_${Date.now()}_${Math.random()}`;
-    
-    console.log('✅ MOCK REGISTER SUCCESSFUL:', { user: newUser, token: mockToken });
-    
-    // Simular delay de rede
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    return {
-      token: mockToken,
-      user: newUser
-    };
+    return response.data;
   },
 
   refreshToken: async (): Promise<AuthResponse> => {
@@ -711,44 +650,13 @@ export const adminAPI = {
       role?: 'admin' | 'therapist' | 'responsible';
       phone?: string;
     }): Promise<any> => {
-      console.log('👤 MOCK CREATE USER - SEMPRE FUNCIONA!');
+      console.log('👤 REAL CREATE USER - Connecting to PostgreSQL backend');
       
-      // Validações básicas
-      if (!userData.name || !userData.password) {
-        throw new Error('Nome e senha são obrigatórios');
-      }
+      const response = await api.post('/api/admin/users', userData);
       
-      if (userData.password.length < 6) {
-        throw new Error('A senha deve ter pelo menos 6 caracteres');
-      }
+      console.log('✅ REAL USER CREATE SUCCESSFUL:', response.data);
       
-      if (!userData.email && !userData.username) {
-        throw new Error('Email ou username é obrigatório');
-      }
-      
-      // Simular criação do usuário
-      const newUser = {
-        id: `mock_admin_user_${Date.now()}`,
-        email: userData.email || null,
-        username: userData.username || null,
-        name: userData.name.trim(),
-        role: userData.role || 'therapist',
-        phone: userData.phone || null,
-        status: 'active',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-      
-      console.log('✅ MOCK USER CREATE SUCCESSFUL:', newUser);
-      
-      // Simular delay de rede
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      return {
-        success: true,
-        message: 'Usuário criado com sucesso',
-        user: newUser
-      };
+      return response.data;
     },
 
     update: async (userId: string, userData: {
@@ -809,55 +717,13 @@ export const adminAPI = {
       consultation_duration?: number;
       max_daily_appointments?: number;
     }): Promise<any> => {
-      console.log('👨‍⚕️ MOCK CREATE THERAPIST - SEMPRE FUNCIONA!');
+      console.log('👨‍⚕️ REAL CREATE THERAPIST - Connecting to PostgreSQL backend');
       
-      // Validações básicas
-      if (!therapistData.name || !therapistData.email || !therapistData.password) {
-        throw new Error('Nome, email e senha são obrigatórios');
-      }
+      const response = await api.post('/api/therapists', therapistData);
       
-      if (therapistData.password.length < 6) {
-        throw new Error('A senha deve ter pelo menos 6 caracteres');
-      }
+      console.log('✅ REAL THERAPIST CREATE SUCCESSFUL:', response.data);
       
-      // Simular criação do terapeuta
-      const newTherapist = {
-        id: `mock_therapist_${Date.now()}`,
-        user_id: `mock_user_${Date.now()}`,
-        email: therapistData.email.trim().toLowerCase(),
-        name: therapistData.name.trim(),
-        phone: therapistData.phone || null,
-        cpf: therapistData.cpf || null,
-        professional_id: therapistData.professional_id || null,
-        specialties: therapistData.specialties || [],
-        bio: therapistData.bio || null,
-        experience_years: therapistData.experience_years || 0,
-        languages: therapistData.languages || ['Português'],
-        consultation_duration: therapistData.consultation_duration || 50,
-        max_daily_appointments: therapistData.max_daily_appointments || 8,
-        status: 'active',
-        role: 'therapist',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-      
-      console.log('✅ MOCK THERAPIST CREATE SUCCESSFUL:', newTherapist);
-      
-      // Simular delay de rede
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      return {
-        success: true,
-        message: 'Terapeuta criado com sucesso',
-        therapist: newTherapist,
-        user: {
-          id: newTherapist.user_id,
-          email: newTherapist.email,
-          name: newTherapist.name,
-          role: 'therapist',
-          status: 'active'
-        }
-      };
+      return response.data;
     },
     
     update: async (therapistId: string, therapistData: any): Promise<any> => {
