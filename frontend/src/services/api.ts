@@ -5,8 +5,9 @@ import { AuthResponse, User, UserRole } from '@/types';
 const isProduction = process.env.NODE_ENV === 'production' && 
                     !window.location.hostname.includes('localhost');
 
-// URL base usando NEXT_PUBLIC_API_URL ou fallback
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 
+// URL base usando VITE_API_URL ou fallback
+const API_BASE_URL = (import.meta as any).env.VITE_API_URL || 
+  process.env.NEXT_PUBLIC_API_URL || 
   (isProduction 
     ? 'https://sapere-system-production.up.railway.app'
     : 'http://localhost:3002');
@@ -605,7 +606,7 @@ export const uploadAPI = {
 
   // Servir arquivo
   getFileUrl: (filename: string): string => {
-    const baseUrl = (import.meta as any).env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3002';
+    const baseUrl = API_BASE_URL.replace('/api', '');
     return `${baseUrl}/uploads/${filename}`;
   },
 
