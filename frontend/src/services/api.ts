@@ -19,6 +19,8 @@ console.log('🔧 HOSTNAME:', window.location.hostname);
 console.log('🔧 VITE_API_URL:', (import.meta as any).env.VITE_API_URL);
 console.log('🔧 CACHE BUST VERSION: v3.0');
 console.log('🔧 USING VERCEL API ROUTES:', isProduction && API_BASE_URL === '');
+console.log('🔧 WILL USE RELATIVE URLS:', API_BASE_URL === '');
+console.log('🔧 FINAL API CONFIG:', { isProduction, API_BASE_URL, willUseVercelRoutes: isProduction && API_BASE_URL === '' });
 
 // Storage keys
 const STORAGE_KEYS = {
