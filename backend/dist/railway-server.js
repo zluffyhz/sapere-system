@@ -10,7 +10,7 @@ const helmet_1 = __importDefault(require("helmet"));
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
-const health_routes_1 = __importDefault(require("./routes/health.routes"));
+const admin_1 = __importDefault(require("./routes/admin"));
 // Carregar variáveis de ambiente
 dotenv_1.default.config();
 const app = (0, express_1.default)();
@@ -19,6 +19,7 @@ app.set('trust proxy', 1);
 // Configuração de CORS SIMPLIFICADA E FUNCIONAL
 const allowedOrigins = [
     'https://sapere-system.vercel.app',
+    'https://sapere-system-nlswnpxqj-zluffyhzs-projects.vercel.app',
     'http://localhost:5173',
     'http://localhost:5174',
     'http://localhost:3000',
@@ -41,13 +42,16 @@ const corsOptions = {
             callback(null, true);
         }
         else {
-            // Em produção, ser mais permissivo com Vercel
-            if (process.env.NODE_ENV === 'production' && origin.includes('vercel.app')) {
+            // Em produção, ser mais permissivo com Vercel e netlify
+            if (process.env.NODE_ENV === 'production' && (origin.includes('vercel.app') ||
+                origin.includes('netlify.app') ||
+                origin.includes('sapere-system'))) {
+                console.log('CORS permitido para origem Vercel/Netlify:', origin);
                 callback(null, true);
             }
             else {
                 console.log('CORS bloqueado para origem:', origin);
-                callback(null, false); // Mudança importante: false ao invés de Error
+                callback(null, false);
             }
         }
     },
@@ -91,9 +95,9 @@ app.use((req, res, next) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.path} - Origin: ${req.headers.origin || 'no-origin'}`);
     next();
 });
-// Rotas
-app.use('/api/health', health_routes_1.default);
+// Rotas (removendo healthRoutes pois está duplicado)
 app.use('/api/auth', auth_routes_1.default);
+app.use('/api/admin', admin_1.default);
 // Rate limit específico para login DEPOIS das rotas
 app.use('/api/auth/login', loginLimiter);
 // Rota base da API
@@ -120,7 +124,32 @@ app.get('/', (req, res) => {
 });
 // === ALIAS NA RAIZ (fora de /api) — ADICIONE ANTES DO 404 ===
 app.get("/health", (_req, res) => {
-    return res.json({ ok: true });
+    return res.json({
+        ok: true,
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        service: 'Sapere System API'
+    });
+});
+// Health check mais detalhado
+app.get("/api/health", (_req, res) => {
+    try {
+        return res.json({
+            status: 'healthy',
+            timestamp: new Date().toISOString(),
+            service: 'Sapere System API',
+            version: '1.0.0',
+            database: process.env.DATABASE_URL ? 'configured' : 'not configured',
+            cors_origins: allowedOrigins.length
+        });
+    }
+    catch (error) {
+        console.error('Health check error:', error);
+        return res.status(500).json({
+            status: 'unhealthy',
+            error: 'Internal server error'
+        });
+    }
 });
 app.get("/me", (_req, res) => {
     // Dummy só para destravar as abas. Depois você pode trocar por auth real.

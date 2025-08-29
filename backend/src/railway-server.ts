@@ -5,7 +5,6 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes';
-import healthRoutes from './routes/health.routes';
 import adminRoutes from './routes/admin';
 
 // Carregar variáveis de ambiente
@@ -107,8 +106,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Rotas
-app.use('/api/health', healthRoutes);
+// Rotas (removendo healthRoutes pois está duplicado)
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 
@@ -141,7 +139,32 @@ app.get('/', (req, res) => {
 
 // === ALIAS NA RAIZ (fora de /api) — ADICIONE ANTES DO 404 ===
 app.get("/health", (_req, res) => {
-  return res.json({ ok: true });
+  return res.json({ 
+    ok: true, 
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    service: 'Sapere System API'
+  });
+});
+
+// Health check mais detalhado
+app.get("/api/health", (_req, res) => {
+  try {
+    return res.json({
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      service: 'Sapere System API',
+      version: '1.0.0',
+      database: process.env.DATABASE_URL ? 'configured' : 'not configured',
+      cors_origins: allowedOrigins.length
+    });
+  } catch (error) {
+    console.error('Health check error:', error);
+    return res.status(500).json({
+      status: 'unhealthy',
+      error: 'Internal server error'
+    });
+  }
 });
 
 app.get("/me", (_req, res) => {
