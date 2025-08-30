@@ -1,5 +1,27 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 
+// Simple in-memory storage (will persist during function lifecycle)
+let usersStore = [
+  {
+    id: '1',
+    name: 'Administrador Sapere',
+    email: 'admin@sapere.com.br',
+    role: 'admin',
+    status: 'active',
+    created_at: '2025-01-01T00:00:00.000Z',
+    updated_at: '2025-01-01T00:00:00.000Z'
+  },
+  {
+    id: '2',
+    name: 'Usuário Teste',
+    email: 'teste@sapere.com.br',
+    role: 'therapist',
+    status: 'active',
+    created_at: '2025-01-01T00:00:00.000Z',
+    updated_at: '2025-01-01T00:00:00.000Z'
+  }
+];
+
 export default function handler(req: VercelRequest, res: VercelResponse) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -18,32 +40,13 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (req.method === 'GET') {
-    // List users
-    const mockUsers = [
-      {
-        id: '1',
-        name: 'Administrador Sapere',
-        email: 'admin@sapere.com.br',
-        role: 'admin',
-        status: 'active',
-        created_at: '2025-01-01T00:00:00.000Z',
-        updated_at: '2025-01-01T00:00:00.000Z'
-      },
-      {
-        id: '2',
-        name: 'Usuário Teste',
-        email: 'teste@sapere.com.br',
-        role: 'therapist',
-        status: 'active',
-        created_at: '2025-01-01T00:00:00.000Z',
-        updated_at: '2025-01-01T00:00:00.000Z'
-      }
-    ];
-
+    // List users from persistent store
+    console.log('📊 GET /api/admin/users - Current users count:', usersStore.length);
+    
     return res.status(200).json({
-      users: mockUsers,
-      total: mockUsers.length,
-      message: 'Usuários listados com sucesso via Vercel API'
+      users: usersStore,
+      total: usersStore.length,
+      message: `Usuários listados com sucesso via Vercel API (${usersStore.length} usuários)`
     });
   }
 
@@ -79,10 +82,16 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
       updated_at: new Date().toISOString()
     };
 
+    // Add user to persistent store
+    usersStore.push(newUser);
+    
+    console.log('✅ POST /api/admin/users - User created:', newUser.name);
+    console.log('📊 Total users now:', usersStore.length);
+
     return res.status(201).json({
       success: true,
       user: newUser,
-      message: '✅ Usuário criado com sucesso via Vercel API!'
+      message: `✅ Usuário "${newUser.name}" criado com sucesso via Vercel API! (Total: ${usersStore.length} usuários)`
     });
   }
 
