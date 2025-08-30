@@ -3,9 +3,10 @@ import { Pool } from 'pg';
 import bcrypt from 'bcryptjs';
 
 // PostgreSQL connection for Vercel
+const DATABASE_URL = 'postgresql://postgres:VDcOBkKZgxgSPXPrYJXE@containers-us-west-140.railway.app:5432/railway';
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://postgres:VDcOBkKZgxgSPXPrYJXE@containers-us-west-140.railway.app:5432/railway',
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  connectionString: DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
   max: 20,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 5000,
