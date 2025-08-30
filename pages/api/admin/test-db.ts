@@ -6,9 +6,9 @@ const DATABASE_URL = 'postgresql://postgres:VDcOBkKZgxgSPXPrYJXE@containers-us-w
 const pool = new Pool({
   connectionString: DATABASE_URL,
   ssl: { rejectUnauthorized: false },
-  max: 20,
+  max: 5,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 5000,
+  connectionTimeoutMillis: 10000,
 });
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
