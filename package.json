@@ -1,16 +1,14 @@
 {
-  "name": "sapere-system",
+  "name": "sapere-system-vercel",
   "version": "1.0.0",
-  "scripts": {
-    "build": "cd frontend && npm install && npm run build",
-    "install": "cd frontend && npm install",
-    "dev": "cd frontend && npm run dev"
+  "description": "Sapere System with Vercel API routes",
+  "engines": {
+    "node": ">=18.0.0"
   },
   "dependencies": {
-    "@supabase/mcp-server-supabase": "^0.4.5"
+    "@vercel/node": "^3.0.0"
   },
-  "devDependencies": {
-    "@playwright/test": "^1.55.0",
-    "@vercel/node": "^5.3.17"
+  "scripts": {
+    "build": "cd frontend && npm run build"
   }
 }
