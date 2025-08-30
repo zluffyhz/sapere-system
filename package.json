@@ -10,6 +10,7 @@
     "@supabase/mcp-server-supabase": "^0.4.5"
   },
   "devDependencies": {
-    "@playwright/test": "^1.55.0"
+    "@playwright/test": "^1.55.0",
+    "@vercel/node": "^5.3.17"
   }
 }
