@@ -695,7 +695,8 @@ export const adminAPI = {
       if (params?.status) query.append('status', params.status);
       if (params?.search) query.append('search', params.search);
       
-      const response = await api.get(`/api/admin/users?${query.toString()}`);
+      // Use backup API temporarily while Railway database is being fixed
+      const response = await api.get(`/api/admin/users-backup?${query.toString()}`);
       return response.data;
     },
 
@@ -707,52 +708,14 @@ export const adminAPI = {
       role?: 'admin' | 'therapist' | 'responsible';
       phone?: string;
     }): Promise<any> => {
-      try {
-        console.log('👤 TRYING REAL CREATE USER - Connecting to PostgreSQL backend');
-        
-        const response = await api.post('/api/admin/users', userData);
-        
-        console.log('✅ REAL USER CREATE SUCCESSFUL:', response.data);
-        
-        return response.data;
-      } catch (error) {
-        console.warn('⚠️ REAL API FAILED, falling back to mock:', error);
-        
-        // FALLBACK MOCK - Para debug
-        if (!userData.name || !userData.password) {
-          throw new Error('Nome e senha são obrigatórios');
-        }
-        
-        if (userData.password.length < 6) {
-          throw new Error('A senha deve ter pelo menos 6 caracteres');
-        }
-        
-        if (!userData.email && !userData.username) {
-          throw new Error('Email ou username é obrigatório');
-        }
-        
-        const newUser = {
-          id: `fallback_user_${Date.now()}`,
-          email: userData.email || null,
-          username: userData.username || null,
-          name: userData.name.trim(),
-          role: userData.role || 'therapist',
-          phone: userData.phone || null,
-          status: 'active',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        };
-        
-        console.log('✅ FALLBACK MOCK USER CREATE:', newUser);
-        
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        return {
-          success: true,
-          message: 'Usuário criado com sucesso (modo fallback - backend não disponível)',
-          user: newUser
-        };
-      }
+      console.log('👤 CREATING USER - Using reliable backup system for clinic');
+      
+      // Use backup API temporarily while Railway database is being fixed
+      const response = await api.post('/api/admin/users-backup', userData);
+      
+      console.log('✅ USER CREATE SUCCESSFUL (Backup API):', response.data);
+      
+      return response.data;
     },
 
     update: async (userId: string, userData: {
