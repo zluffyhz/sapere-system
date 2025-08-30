@@ -16,8 +16,12 @@
       "dest": "/pages/api/$1.ts"
     },
     {
-      "src": "/(.*)",
-      "dest": "/frontend/dist/$1"
+      "src": "/assets/(.*)",
+      "dest": "/frontend/dist/assets/$1"
+    },
+    {
+      "src": "/favicon.ico",
+      "dest": "/frontend/dist/favicon.ico"
     },
     {
       "src": "/(.*)",
