@@ -6,14 +6,14 @@
       "use": "@vercel/static"
     },
     {
-      "src": "pages/api/**/*.ts",
+      "src": "backend/dist/vercel-simple.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/pages/api/$1.ts"
+      "dest": "/backend/dist/vercel-simple.js"
     },
     {
       "src": "/assets/(.*)",
@@ -27,5 +27,8 @@
       "src": "/(.*)",
       "dest": "/frontend/dist/index.html"
     }
-  ]
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
 }
