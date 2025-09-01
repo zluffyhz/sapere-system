@@ -10,6 +10,7 @@
     "build:prod": "NODE_ENV=production vite build",
     "build:vercel": "npm run clean && npm run build",
     "build:check": "tsc && vite build",
+    "vercel-build": "vite build",
     "preview": "vite preview",
     "preview:prod": "vite build && vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
