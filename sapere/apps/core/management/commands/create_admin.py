@@ -15,9 +15,9 @@ class Command(BaseCommand):
                 last_name='Sapere'
             )
             self.stdout.write(
-                self.style.SUCCESS(f'✅ Admin user created: {admin.username}')
+                self.style.SUCCESS(f'Admin user created: {admin.username}')
             )
         else:
             self.stdout.write(
-                self.style.WARNING('⚠️  Admin user already exists')
+                self.style.WARNING('Admin user already exists')
             )
