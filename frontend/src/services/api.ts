@@ -1,26 +1,16 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { AuthResponse, User, UserRole } from '@/types';
 
-// Detectar ambiente de forma robusta - FORÇA LOCAL QUANDO EM LOCALHOST
-const isProduction = process.env.NODE_ENV === 'production' && 
-                    !window.location.hostname.includes('localhost');
+// Detectar ambiente - Railway vs local
+const isProduction = process.env.NODE_ENV === 'production';
+const isLocal = window.location.hostname.includes('localhost');
 
-// URL base usando VITE_API_URL ou fallback
+// URL base para Railway - usa URL relativa em produção
 const API_BASE_URL = (import.meta as any).env.VITE_API_URL || 
   process.env.NEXT_PUBLIC_API_URL || 
-  (isProduction 
-    ? '' // Use relative URLs in production (Vercel API routes)
-    : 'http://localhost:3002');
+  (isLocal ? 'http://localhost:3000' : '');
 
-console.log('🔧 ENVIRONMENT:', isProduction ? 'PRODUCTION' : 'DEVELOPMENT');
-console.log('🔧 API_BASE_URL:', API_BASE_URL);
-console.log('🔧 NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL);
-console.log('🔧 HOSTNAME:', window.location.hostname);
-console.log('🔧 VITE_API_URL:', (import.meta as any).env.VITE_API_URL);
-console.log('🔧 CACHE BUST VERSION: v3.0');
-console.log('🔧 USING VERCEL API ROUTES:', isProduction && API_BASE_URL === '');
-console.log('🔧 WILL USE RELATIVE URLS:', API_BASE_URL === '');
-console.log('🔧 FINAL API CONFIG:', { isProduction, API_BASE_URL, willUseVercelRoutes: isProduction && API_BASE_URL === '' });
+console.log('🚂 RAILWAY CONFIG:', { isProduction, isLocal, API_BASE_URL });
 
 // Storage keys
 const STORAGE_KEYS = {
