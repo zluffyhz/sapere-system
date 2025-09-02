@@ -1,18 +1,9 @@
 {
-  "name": "sapere-system-vercel",
+  "name": "sapere-frontend",
   "version": "1.0.0",
-  "description": "Sapere System with Vercel API routes",
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "dependencies": {
-    "@vercel/node": "^3.0.0",
-    "pg": "^8.11.3",
-    "bcryptjs": "^2.4.3",
-    "@types/pg": "^8.10.9",
-    "@types/bcryptjs": "^2.4.6"
-  },
+  "private": true,
   "scripts": {
-    "build": "cd frontend && npm run build"
+    "build": "cd frontend && npm install && npm run build",
+    "dev": "cd frontend && npm run dev"
   }
 }
