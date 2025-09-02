@@ -1,0 +1,1 @@
+# Core app - Base functionality
