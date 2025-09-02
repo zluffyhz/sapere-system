@@ -8,6 +8,10 @@ const { Pool } = require('pg');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+console.log('🚂 Starting Sapere System on Railway...');
+console.log('🔧 Environment:', process.env.NODE_ENV || 'development');
+console.log('🔧 Port:', PORT);
+
 // CORS Configuration
 app.use(cors({
   origin: true,
@@ -466,14 +470,33 @@ app.get('*', (req, res) => {
 
 // Start Server
 const startServer = async () => {
-  await initDatabase();
-  
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Sapere System running on Railway`);
-    console.log(`📍 Port: ${PORT}`);
-    console.log(`🔗 Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`💾 Database: ${process.env.DATABASE_URL ? 'Connected' : 'Local'}`);
-  });
+  try {
+    console.log('🔄 Initializing database...');
+    await initDatabase();
+    console.log('✅ Database initialized successfully');
+    
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`🚀 Sapere System running on Railway`);
+      console.log(`📍 Port: ${PORT}`);
+      console.log(`🔗 Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`💾 Database: ${process.env.DATABASE_URL ? 'Connected' : 'Local'}`);
+      console.log(`🌍 Health check: /health`);
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  }
 };
 
-startServer().catch(console.error);
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+  console.error('❌ Uncaught Exception:', error);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
+});
+
+startServer();
