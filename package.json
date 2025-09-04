@@ -1,12 +1,15 @@
 {
-  "name": "sapere-clinic-system",
+  "name": "sapere-system",
   "version": "1.0.0",
-  "description": "Sistema de Gestão Clínica Sapere - Django",
   "scripts": {
-    "build": "echo 'Django project - no build needed'",
-    "start": "gunicorn sapere.wsgi:application --bind 0.0.0.0:$PORT"
+    "build": "cd frontend && npm install && npm run build",
+    "install": "cd frontend && npm install",
+    "dev": "cd frontend && npm run dev"
   },
-  "engines": {
-    "python": "3.11.x"
+  "dependencies": {
+    "@supabase/mcp-server-supabase": "^0.4.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0"
   }
 }

@@ -1,1 +1,0 @@
-# Apps da Clínica Sapere
