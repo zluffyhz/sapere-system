@@ -209,19 +209,37 @@ export const authAPI = {
     
     // MOCK DATA - SISTEMA SEMPRE FUNCIONAL
     const mockUsers = {
-      'admin@sapere.com.br': {
+      'admin@sapere.com': {
         id: '1',
-        email: 'admin@sapere.com.br',
+        email: 'admin@sapere.com',
         name: 'Administrador Sapere',
         role: 'admin' as UserRole,
         status: 'active' as any,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       },
-      'teste@sapere.com.br': {
+      'psi@sapere.com': {
         id: '2', 
-        email: 'teste@sapere.com.br',
-        name: 'Usuário Teste',
+        email: 'psi@sapere.com',
+        name: 'Psicóloga Sapere',
+        role: 'profissional' as UserRole,
+        status: 'active' as any,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      'fono@sapere.com': {
+        id: '3', 
+        email: 'fono@sapere.com',
+        name: 'Fonoaudióloga Sapere',
+        role: 'profissional' as UserRole,
+        status: 'active' as any,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      'to@sapere.com': {
+        id: '4', 
+        email: 'to@sapere.com',
+        name: 'Terapeuta Ocupacional Sapere',
         role: 'profissional' as UserRole,
         status: 'active' as any,
         created_at: new Date().toISOString(),
@@ -232,7 +250,11 @@ export const authAPI = {
     const email = loginField.trim().toLowerCase();
     const user = mockUsers[email as keyof typeof mockUsers];
     
-    if (!user || password !== 'Sapere@2025') {
+    // Accept multiple password formats for flexibility
+    const validPasswords = ['admin123', 'psi123', 'fono123', 'to123', 'Sapere@2025'];
+    const isValidPassword = validPasswords.includes(password);
+    
+    if (!user || !isValidPassword) {
       throw new Error('Credenciais inválidas');
     }
     

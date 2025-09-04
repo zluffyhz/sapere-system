@@ -7,7 +7,7 @@ import NotificationProvider from '@/context/NotificationContext';
 import ProtectedRoute, { AdminRoute, ClinicalRoute } from '@/components/common/ProtectedRoute';
 import Layout from '@/components/common/Layout';
 import Home from '@/pages/Home';
-import LoginSimple from '@/pages/LoginSimple';
+import Login from '@/pages/Login';
 import DashboardReal from '@/pages/DashboardReal';
 import PatientsReal from '@/pages/PatientsReal';
 import AppointmentsReal from '@/pages/AppointmentsReal';
@@ -38,7 +38,7 @@ const AppContent: React.FC = () => {
       {/* Rota pública de login */}
       <Route 
         path="/login" 
-        element={<LoginSimple />} 
+        element={<Login />} 
       />
       
       {/* Rotas protegidas */}
