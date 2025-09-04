@@ -207,6 +207,9 @@ export const authAPI = {
   login: async (loginField: string, password: string, rememberMe = false): Promise<AuthResponse> => {
     console.log('🔐 MOCK LOGIN - SEMPRE FUNCIONA!');
     
+    // Simular delay de rede para realismo
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
     // MOCK DATA - SISTEMA SEMPRE FUNCIONAL
     const mockUsers = {
       'admin@sapere.com': {
@@ -344,10 +347,20 @@ export const authAPI = {
   },
 
   verifyToken: async (): Promise<{ valid: boolean; user: User }> => {
-    const endpoint = getEndpoint('/auth/verify');
-    console.log('🧪 VERIFYING TOKEN:', endpoint);
-    const response = await api.get(endpoint);
-    return response.data;
+    console.log('🧪 MOCK TOKEN VERIFICATION - SEMPRE VÁLIDO');
+    
+    // Em modo mock, sempre retornar token válido
+    const storedUser = localStorage.getItem(STORAGE_KEYS.USER) || sessionStorage.getItem(STORAGE_KEYS.USER);
+    const storedToken = localStorage.getItem(STORAGE_KEYS.TOKEN) || sessionStorage.getItem(STORAGE_KEYS.TOKEN);
+    
+    if (storedUser && storedToken) {
+      return {
+        valid: true,
+        user: JSON.parse(storedUser)
+      };
+    }
+    
+    return { valid: false, user: null as any };
   },
 
   getMe: async (): Promise<User> => {
