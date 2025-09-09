@@ -54,7 +54,7 @@ router.post('/login', async (req: Request, res: Response) => {
     
     // Buscar usuário
     const query = `
-      SELECT id, name, email, password, role, is_active
+      SELECT id, name, email, password, role, status
       FROM users
       WHERE LOWER(email) = LOWER($1)
     `;
@@ -71,7 +71,7 @@ router.post('/login', async (req: Request, res: Response) => {
     const user = result.rows[0];
     
     // Verificar se usuário está ativo
-    if (!user.is_active) {
+    if (user.status !== 'active') {
       console.log('Usuário inativo:', email);
       return res.status(401).json({
         error: 'Conta desativada. Entre em contato com o administrador.'
