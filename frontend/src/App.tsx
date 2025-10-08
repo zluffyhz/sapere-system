@@ -4,20 +4,20 @@ import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { navigationManager } from '@/services/navigationService';
 import NotificationProvider from '@/context/NotificationContext';
 import Layout from '@/components/common/Layout';
-import Login from '@/pages/Login';
-import DashboardReal from '@/pages/DashboardReal';
-import DashboardTest from '@/pages/DashboardTest';
-import SimpleDashboard from '@/pages/SimpleDashboard';
-import PatientManagement from '@/pages/PatientManagement';
-import AppointmentManagement from '@/pages/AppointmentManagement';
-import AnamneseManagement from '@/pages/AnamneseManagement';
-import SystemSettings from '@/pages/SystemSettings';
-import AppointmentsReal from '@/pages/AppointmentsReal';
-import PatientsReal from '@/pages/PatientsReal';
-import Profile from '@/pages/Profile';
-import AnamneseReal from '@/pages/AnamneseReal';
-import Administration from '@/pages/Administration';
-import Therapists from '@/pages/Therapists';
+import Login from '@/pages/Login.tsx';
+import DashboardReal from '@/pages/DashboardReal.tsx';
+import DashboardTest from '@/pages/DashboardTest.tsx';
+import SimpleDashboard from '@/pages/SimpleDashboard.tsx';
+import PatientManagement from '@/pages/PatientManagement.tsx';
+import AppointmentManagement from '@/pages/AppointmentManagement.tsx';
+import AnamneseManagement from '@/pages/AnamneseManagement.tsx';
+import SystemSettings from '@/pages/SystemSettings.tsx';
+import AppointmentsReal from '@/pages/AppointmentsReal.tsx';
+import PatientsReal from '@/pages/PatientsReal.tsx';
+import Profile from '@/pages/Profile.tsx';
+import AnamneseReal from '@/pages/AnamneseReal.tsx';
+import Administration from '@/pages/Administration.tsx';
+import Therapists from '@/pages/Therapists.tsx';
 
 // Componente para rotas protegidas
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
