@@ -117,4 +117,4 @@ export const SystemNotificationsProvider: React.FC<SystemNotificationsProviderPr
   );
 };
 
-export default SystemNotificationsContext;
+export default SystemNotificationsProvider;

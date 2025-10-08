@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { UserRole } from '@/types';
 
@@ -11,11 +11,13 @@ interface ProtectedRouteProps {
   showUnauthorized?: boolean; // Se true, mostra tela de não autorizado em vez de redirecionar
 }
 
-const UnauthorizedPage: React.FC<{ userRole?: UserRole; requiredRoles?: UserRole[]; onGoBack: () => void }> = ({ 
-  userRole, 
-  requiredRoles, 
-  onGoBack 
-}) => (
+const UnauthorizedPage: React.FC<{ userRole?: UserRole; requiredRoles?: UserRole[]; onGoBack: () => void }> = ({
+  userRole,
+  requiredRoles,
+  onGoBack
+}) => {
+  const navigate = useNavigate();
+  return (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
     <div className="max-w-md w-full bg-white shadow-lg rounded-lg p-8 text-center">
       <div className="mb-6">
@@ -54,7 +56,7 @@ const UnauthorizedPage: React.FC<{ userRole?: UserRole; requiredRoles?: UserRole
         </button>
         
         <button
-          onClick={() => window.location.href = '/'}
+          onClick={() => navigate('/dashboard')}
           className="w-full text-sapere-brown hover:text-sapere-orange transition-colors"
         >
           Ir para o Dashboard
@@ -62,7 +64,8 @@ const UnauthorizedPage: React.FC<{ userRole?: UserRole; requiredRoles?: UserRole
       </div>
     </div>
   </div>
-);
+  );
+};
 
 const LoadingSpinner: React.FC = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -84,15 +87,16 @@ const getRoleLabel = (role: UserRole): string => {
   return labels[role] || role;
 };
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
-  children, 
-  roles = [], 
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
+  children,
+  roles = [],
   requireAll = false,
   fallbackPath = '/login',
   showUnauthorized = false
 }) => {
   const { user, isLoading, isAuthenticated, hasRole, hasAnyRole } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Mostrar loading enquanto verifica autenticação
   if (isLoading) {
@@ -132,7 +136,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         <UnauthorizedPage
           userRole={user?.role}
           requiredRoles={roles}
-          onGoBack={() => window.history.back()}
+          onGoBack={() => navigate(-1)}
         />
       );
     } else {
@@ -147,7 +151,22 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
 // Hook para usar em componentes para verificar permissões condicionalmente
 export const usePermissions = () => {
-  const { user, hasRole, hasAnyRole, canAccessPatient } = useAuth();
+  const { user, hasRole } = useAuth();
+
+  const hasAnyRole = (roles: UserRole[]): boolean => {
+    return roles.some(role => hasRole(role));
+  };
+
+  const canAccessPatient = (patientId: string): boolean => {
+    // Implementar lógica de acesso a paciente baseado no role
+    if (hasRole('admin')) return true;
+    if (hasRole('profissional') || hasRole('therapist')) {
+      // Aqui você pode implementar lógica mais específica
+      // Por enquanto, permitir acesso a todos os profissionais
+      return true;
+    }
+    return false;
+  };
 
   return {
     user,

@@ -1,7 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, UserRole } from '@/types';
 import { authAPI } from '@/services/api';
-import syncService from '@/services/syncService';
 
 interface AuthContextType {
   user: User | null;
@@ -9,281 +8,13 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
-  register: (email: string, password: string, name: string, role?: UserRole) => Promise<void>;
   logout: () => Promise<void>;
-  refreshToken: () => Promise<void>;
   updateProfile: (data: Partial<User>) => Promise<void>;
   hasRole: (role: UserRole) => boolean;
   hasAnyRole: (roles: UserRole[]) => boolean;
-  canAccessPatient: (patientId: string) => boolean;
 }
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
-// Configuração de persistência
-const STORAGE_KEYS = {
-  TOKEN: 'sapere_token',
-  USER: 'sapere_user',
-  REMEMBER: 'sapere_remember',
-  TOKEN_EXPIRY: 'sapere_token_expiry'
-};
-
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const isAuthenticated = !!(user && token);
-
-  // Função para limpar dados da sessão
-  const clearAuth = useCallback(() => {
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem(STORAGE_KEYS.TOKEN);
-    localStorage.removeItem(STORAGE_KEYS.USER);
-    localStorage.removeItem(STORAGE_KEYS.TOKEN_EXPIRY);
-    sessionStorage.removeItem(STORAGE_KEYS.TOKEN);
-    sessionStorage.removeItem(STORAGE_KEYS.USER);
-    
-    // Desconectar do serviço de sincronização (desabilitado internamente)
-    syncService.disconnect();
-  }, []);
-
-  // Função para salvar dados da sessão
-  const saveAuth = useCallback((authToken: string, authUser: User, remember = false) => {
-    setToken(authToken);
-    setUser(authUser);
-
-    const storage = remember ? localStorage : sessionStorage;
-    storage.setItem(STORAGE_KEYS.TOKEN, authToken);
-    storage.setItem(STORAGE_KEYS.USER, JSON.stringify(authUser));
-    
-    if (remember) {
-      localStorage.setItem(STORAGE_KEYS.REMEMBER, 'true');
-    }
-
-    // Calcular expiração do token (7 dias ou 30 se remember)
-    const expiryHours = remember ? 720 : 168; // 30 dias ou 7 dias
-    const expiry = new Date(Date.now() + expiryHours * 60 * 60 * 1000).getTime();
-    localStorage.setItem(STORAGE_KEYS.TOKEN_EXPIRY, expiry.toString());
-
-    // Conectar ao serviço de sincronização (desabilitado internamente)
-    syncService.connect(authToken);
-  }, []);
-
-  // Verificar se o token está expirado
-  const isTokenExpired = useCallback(() => {
-    const expiry = localStorage.getItem(STORAGE_KEYS.TOKEN_EXPIRY);
-    if (!expiry) return true;
-    
-    return Date.now() > parseInt(expiry);
-  }, []);
-
-  // Função de login
-  const login = useCallback(async (email: string, password: string, rememberMe = false) => {
-    try {
-      console.log('🔐 AuthContext: Starting login process', { email, rememberMe });
-      setIsLoading(true);
-      const response = await authAPI.login(email, password, rememberMe);
-      console.log('✅ AuthContext: Login successful, saving auth data');
-      saveAuth(response.token, response.user, rememberMe);
-    } catch (error: any) {
-      console.error('❌ AuthContext: Login failed', error);
-      clearAuth();
-      throw new Error(error.message || 'Erro no login');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [saveAuth, clearAuth]);
-
-  // Função de registro
-  const register = useCallback(async (email: string, password: string, name: string, role: UserRole = 'profissional') => {
-    try {
-      setIsLoading(true);
-      const response = await authAPI.register(email, password, name, role);
-      saveAuth(response.token, response.user);
-    } catch (error: any) {
-      clearAuth();
-      throw new Error(error.message || 'Erro no registro');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [saveAuth, clearAuth]);
-
-  // Função de logout
-  const logout = useCallback(async () => {
-    try {
-      // Chamar API de logout se estiver autenticado
-      if (token) {
-        await authAPI.logout();
-      }
-    } catch (error) {
-      console.warn('Erro ao fazer logout na API:', error);
-    } finally {
-      clearAuth();
-    }
-  }, [token, clearAuth]);
-
-  // Função para atualizar token
-  const refreshToken = useCallback(async () => {
-    try {
-      if (!token) throw new Error('Não há token para atualizar');
-      
-      const response = await authAPI.refreshToken();
-      const remember = localStorage.getItem(STORAGE_KEYS.REMEMBER) === 'true';
-      saveAuth(response.token, response.user, remember);
-    } catch (error) {
-      console.error('Erro ao atualizar token:', error);
-      clearAuth();
-      throw error;
-    }
-  }, [token, saveAuth, clearAuth]);
-
-  // Função para atualizar perfil
-  const updateProfile = useCallback(async (data: Partial<User>) => {
-    try {
-      if (!token) throw new Error('Token não encontrado');
-      
-      const response = await authAPI.updateProfile(data);
-      const updatedUser = { ...user!, ...response.user };
-      setUser(updatedUser);
-      
-      // Atualizar no storage
-      const storage = localStorage.getItem(STORAGE_KEYS.REMEMBER) === 'true' ? localStorage : sessionStorage;
-      storage.setItem(STORAGE_KEYS.USER, JSON.stringify(updatedUser));
-    } catch (error: any) {
-      throw new Error(error.message || 'Erro ao atualizar perfil');
-    }
-  }, [user, token]);
-
-  // Funções de verificação de permissões
-  const hasRole = useCallback((role: UserRole) => {
-    if (!user) return false;
-    return user.role === role;
-  }, [user]);
-
-  const hasAnyRole = useCallback((roles: UserRole[]) => {
-    return roles.some(role => hasRole(role));
-  }, [hasRole]);
-
-  const canAccessPatient = useCallback((_patientId: string) => {
-    if (!user) return false;
-    
-    // Admin e profissional podem acessar todos os pacientes
-    if (user.role === 'admin' || user.role === 'profissional') {
-      return true;
-    }
-    
-    return false;
-  }, [user]);
-
-  // Efeito para carregar dados salvos na inicialização
-  useEffect(() => {
-    const initAuth = async () => {
-      try {
-        console.log('🔄 AuthContext: Initializing authentication...');
-        
-        // Verificar localStorage primeiro (remember me)
-        let storedToken = localStorage.getItem(STORAGE_KEYS.TOKEN);
-        let storedUser = localStorage.getItem(STORAGE_KEYS.USER);
-        
-        console.log('🔍 AuthContext: Checking localStorage', {
-          hasToken: !!storedToken,
-          hasUser: !!storedUser
-        });
-        
-        // Se não encontrar no localStorage, verificar sessionStorage
-        if (!storedToken) {
-          storedToken = sessionStorage.getItem(STORAGE_KEYS.TOKEN);
-          storedUser = sessionStorage.getItem(STORAGE_KEYS.USER);
-          
-          console.log('🔍 AuthContext: Checking sessionStorage', {
-            hasToken: !!storedToken,
-            hasUser: !!storedUser
-          });
-        }
-
-        if (storedToken && storedUser && !isTokenExpired()) {
-          console.log('✅ AuthContext: Found valid stored auth, restoring session');
-          const userData = JSON.parse(storedUser);
-          setToken(storedToken);
-          setUser(userData);
-          
-          // Conectar ao serviço de sincronização (desabilitado internamente)
-          syncService.connect(storedToken);
-          
-          // Tentar verificar o token em background
-          try {
-            console.log('🧪 AuthContext: Verifying stored token...');
-            const verification = await authAPI.verifyToken();
-            if (!verification.valid) {
-              console.warn('❌ AuthContext: Stored token is invalid, logging out');
-              clearAuth();
-            } else {
-              console.log('✅ AuthContext: Stored token is valid');
-            }
-          } catch (error) {
-            console.warn('⚠️ AuthContext: Error verifying token, logging out:', error);
-            clearAuth();
-          }
-        } else if (storedToken) {
-          console.log('⏰ AuthContext: Token expired, clearing auth');
-          clearAuth();
-        } else {
-          console.log('🚫 AuthContext: No stored authentication found');
-        }
-      } catch (error) {
-        console.error('❌ AuthContext: Error initializing authentication:', error);
-        clearAuth();
-      } finally {
-        console.log('🏁 AuthContext: Initialization complete');
-        setIsLoading(false);
-      }
-    };
-
-    initAuth();
-  }, [isTokenExpired, clearAuth]);
-
-  // Auto-refresh do token (a cada 6 horas)
-  useEffect(() => {
-    if (!token || !user) return;
-
-    const interval = setInterval(async () => {
-      try {
-        await refreshToken();
-      } catch (error) {
-        console.error('Erro no refresh automático do token:', error);
-      }
-    }, 6 * 60 * 60 * 1000); // 6 horas
-
-    return () => clearInterval(interval);
-  }, [token, user, refreshToken]);
-
-  const contextValue: AuthContextType = {
-    user,
-    token,
-    isLoading,
-    isAuthenticated,
-    login,
-    register,
-    logout,
-    refreshToken,
-    updateProfile,
-    hasRole,
-    hasAnyRole,
-    canAccessPatient
-  };
-
-  return (
-    <AuthContext.Provider value={contextValue}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -291,4 +22,156 @@ export const useAuth = () => {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
+};
+
+const STORAGE_KEYS = {
+  TOKEN: 'sapere_token',
+  USER: 'sapere_user',
+  REMEMBER: 'sapere_remember'
+};
+
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const isAuthenticated = !!(user && token);
+
+  // Limpar autenticação
+  const clearAuth = () => {
+    setUser(null);
+    setToken(null);
+    localStorage.removeItem(STORAGE_KEYS.TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.USER);
+    localStorage.removeItem(STORAGE_KEYS.REMEMBER);
+    sessionStorage.removeItem(STORAGE_KEYS.TOKEN);
+    sessionStorage.removeItem(STORAGE_KEYS.USER);
+  };
+
+  // Login
+  const login = async (email: string, password: string, rememberMe: boolean = false) => {
+    try {
+      console.log('🔐 Iniciando login...');
+      const response = await authAPI.login(email, password, rememberMe);
+      
+      const { token: newToken, user: newUser } = response;
+      
+      setToken(newToken);
+      setUser(newUser);
+      
+      // Armazenar dados
+      const storage = rememberMe ? localStorage : sessionStorage;
+      storage.setItem(STORAGE_KEYS.TOKEN, newToken);
+      storage.setItem(STORAGE_KEYS.USER, JSON.stringify(newUser));
+      
+      if (rememberMe) {
+        localStorage.setItem(STORAGE_KEYS.REMEMBER, 'true');
+      }
+      
+      console.log('✅ Login realizado com sucesso');
+    } catch (error) {
+      clearAuth();
+      throw error;
+    }
+  };
+
+  // Logout
+  const logout = async () => {
+    try {
+      await authAPI.logout();
+    } catch (error) {
+      console.error('Erro no logout:', error);
+    } finally {
+      clearAuth();
+    }
+  };
+
+  // Verificar papel do usuário
+  const hasRole = (role: UserRole): boolean => {
+    return user?.role === role;
+  };
+
+  // Verificar se usuário tem qualquer um dos papéis
+  const hasAnyRole = (roles: UserRole[]): boolean => {
+    return user ? roles.includes(user.role) : false;
+  };
+
+  // Atualizar perfil do usuário
+  const updateProfile = async (data: Partial<User>) => {
+    try {
+      console.log('🔄 Atualizando perfil...');
+      const response = await authAPI.updateProfile(data);
+
+      const updatedUser = response.user;
+      setUser(updatedUser);
+
+      // Atualizar no storage
+      const remember = localStorage.getItem(STORAGE_KEYS.REMEMBER) === 'true';
+      const storage = remember ? localStorage : sessionStorage;
+      storage.setItem(STORAGE_KEYS.USER, JSON.stringify(updatedUser));
+
+      console.log('✅ Perfil atualizado com sucesso');
+    } catch (error) {
+      console.error('Erro ao atualizar perfil:', error);
+      throw error;
+    }
+  };
+
+  // Carregar dados da sessão
+  useEffect(() => {
+    const loadSession = async () => {
+      try {
+        const storedToken = localStorage.getItem(STORAGE_KEYS.TOKEN) ||
+                           sessionStorage.getItem(STORAGE_KEYS.TOKEN);
+        const storedUser = localStorage.getItem(STORAGE_KEYS.USER) ||
+                          sessionStorage.getItem(STORAGE_KEYS.USER);
+
+        if (storedToken && storedUser) {
+          console.log('🔄 Restaurando sessão...');
+
+          // IMPORTANTE: Setar usuário e token ANTES de verificar
+          // Isso evita tela branca enquanto verifica
+          try {
+            const parsedUser = JSON.parse(storedUser);
+            setToken(storedToken);
+            setUser(parsedUser);
+            console.log('✅ Sessão restaurada:', parsedUser.email);
+          } catch (parseError) {
+            console.error('Erro ao parsear usuário:', parseError);
+            clearAuth();
+          }
+        } else {
+          console.log('ℹ️ Nenhuma sessão encontrada');
+        }
+      } catch (error) {
+        console.error('Erro ao carregar sessão:', error);
+        clearAuth();
+      } finally {
+        // SEMPRE liberar loading após 500ms máximo
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 100);
+      }
+    };
+
+    loadSession();
+  }, []);
+
+  const value: AuthContextType = {
+    user,
+    token,
+    isLoading,
+    isAuthenticated,
+    login,
+    logout,
+    updateProfile,
+    hasRole,
+    hasAnyRole
+  };
+
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 };

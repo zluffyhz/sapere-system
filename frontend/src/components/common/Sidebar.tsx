@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { 
   Home, 
   Users, 
@@ -19,6 +19,7 @@ import { ConditionalRender } from '@/components/common/ProtectedRoute';
 
 const Sidebar: React.FC = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   // Mapear role do BD para exibição
   const getRoleLabel = (role: string) => {
@@ -41,7 +42,7 @@ const Sidebar: React.FC = () => {
 
   // Navegação baseada em roles
   const baseNavigation = [
-    { name: 'Dashboard', href: '/', icon: Home },
+    { name: 'Dashboard', href: '/dashboard', icon: Home },
   ];
 
   const adminNavigation = [
@@ -71,10 +72,11 @@ const Sidebar: React.FC = () => {
   const handleLogout = async () => {
     try {
       await logout();
+      navigate('/login?reason=logout');
     } catch (error) {
       console.error('Erro no logout:', error);
       // Força logout mesmo se houver erro na API
-      window.location.href = '/login?reason=logout';
+      navigate('/login?reason=logout');
     }
   };
 

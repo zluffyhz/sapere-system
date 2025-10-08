@@ -16,9 +16,10 @@ export interface AuthRequest extends Request {
 }
 
 interface JWTPayload {
-  userId: string;
+  id: string;
   email: string;
   role: UserRole;
+  name: string;
   iat: number;
   exp: number;
 }
@@ -48,7 +49,7 @@ export const authenticateToken = async (
       `SELECT id, email, name, role, status, phone, last_login_at 
        FROM users 
        WHERE id = $1 AND status = 'active'`,
-      [decoded.userId]
+      [decoded.id]
     );
 
     if (result.rows.length === 0) {

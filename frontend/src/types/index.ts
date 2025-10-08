@@ -255,8 +255,20 @@ export interface SystemNotification {
   data?: { [key: string]: any };
 }
 
-export interface PatientDetails extends Patient {
-  // PatientDetails should include all Patient fields
+export interface PatientDetails {
+  id: string;
+  name?: string;
+  nome?: string;
+  birth_date?: string;
+  nascimento?: string;
+  phone?: string;
+  telefone?: string;
+  email?: string;
+  responsible_users?: string[];
+  active?: boolean;
+  created_at?: string;
+  updated_at?: string;
+  [key: string]: any;
 }
 
 export interface AuthResponse {

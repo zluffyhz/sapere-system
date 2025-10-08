@@ -32,7 +32,7 @@ export class ProductionTestSuite {
     console.log('\n🔍 TESTING ENVIRONMENT...');
     
     try {
-      const isProduction = process.env.NODE_ENV === 'production' || 
+      const isProduction = import.meta.env.MODE === 'production' || 
                           window.location.hostname.includes('vercel.app') || 
                           window.location.hostname !== 'localhost';
       

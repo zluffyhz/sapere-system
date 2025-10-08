@@ -1,5 +1,6 @@
 // Dropdown de notificações para o sino no header
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Bell,
   X,
@@ -15,6 +16,7 @@ import { useSystemNotifications } from '@/context/SystemNotificationsContext';
 import { formatDate } from '@/utils/formatting';
 
 const NotificationsDropdown: React.FC = () => {
+  const navigate = useNavigate();
   const {
     notifications,
     unreadCount,
@@ -84,21 +86,24 @@ const NotificationsDropdown: React.FC = () => {
     switch (notification.type) {
       case 'message_posted':
         // Navegar para comunicação
-        window.location.href = '/communication';
+        navigate('/communication');
         break;
       case 'patient_created':
         // Navegar para pacientes
-        window.location.href = '/patients';
+        navigate('/patients');
         break;
       case 'appointment_scheduled':
       case 'appointment_completed':
         // Navegar para agendamentos
-        window.location.href = '/appointments';
+        navigate('/appointments');
         break;
       default:
         // Fechar dropdown
         setIsOpen(false);
     }
+
+    // Sempre fechar dropdown após navegação
+    setIsOpen(false);
   };
 
   return (

@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import type { Appointment } from '@/pages/Calendar';
+import type { Appointment } from '@/types';
 
 interface DragState {
   isDragging: boolean;

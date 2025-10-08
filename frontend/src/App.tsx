@@ -1,176 +1,245 @@
-import React from 'react';
-import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
-import { DashboardProvider } from '@/context/DashboardContext';
-import { SystemNotificationsProvider } from '@/context/SystemNotificationsContext';
+import { navigationManager } from '@/services/navigationService';
 import NotificationProvider from '@/context/NotificationContext';
-import ProtectedRoute, { AdminRoute, ClinicalRoute } from '@/components/common/ProtectedRoute';
 import Layout from '@/components/common/Layout';
-import Home from '@/pages/Home';
 import Login from '@/pages/Login';
 import DashboardReal from '@/pages/DashboardReal';
-import PatientsReal from '@/pages/PatientsReal';
+import DashboardTest from '@/pages/DashboardTest';
+import SimpleDashboard from '@/pages/SimpleDashboard';
+import PatientManagement from '@/pages/PatientManagement';
+import AppointmentManagement from '@/pages/AppointmentManagement';
+import AnamneseManagement from '@/pages/AnamneseManagement';
+import SystemSettings from '@/pages/SystemSettings';
 import AppointmentsReal from '@/pages/AppointmentsReal';
-import TherapyReal from '@/pages/TherapyReal';
-import CommunicationReal from '@/pages/CommunicationReal';
-import AnamneseUpload from '@/pages/AnamneseUpload';
-import Therapists from '@/pages/Therapists';
-import Administration from '@/pages/Administration';
+import PatientsReal from '@/pages/PatientsReal';
 import Profile from '@/pages/Profile';
+import AnamneseReal from '@/pages/AnamneseReal';
+import Administration from '@/pages/Administration';
+import Therapists from '@/pages/Therapists';
 
-
-const AppContent: React.FC = () => {
+// Componente para rotas protegidas
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
+  const [showLoadingTimeout, setShowLoadingTimeout] = React.useState(false);
+
+  // Proteção: Se loading demorar mais de 3 segundos, mostrar mensagem
+  React.useEffect(() => {
+    if (isLoading) {
+      const timer = setTimeout(() => {
+        setShowLoadingTimeout(true);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading]);
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sapere-orange"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sapere-orange mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando...</p>
+          {showLoadingTimeout && (
+            <div className="mt-4">
+              <p className="text-yellow-600 text-sm">Verificando conexão...</p>
+              <button
+                onClick={() => window.location.href = '/login'}
+                className="mt-2 text-sapere-orange underline text-sm"
+              >
+                Ir para login
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+};
+
+// Componente para layout protegido
+const ProtectedLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  return (
+    <ProtectedRoute>
+      <Layout>
+        {children}
+      </Layout>
+    </ProtectedRoute>
+  );
+};
+
+// Componente principal da aplicação
+const AppContent: React.FC = () => {
+  const { isAuthenticated, isLoading } = useAuth();
+  const navigate = useNavigate();
+  const [loadingTimeout, setLoadingTimeout] = React.useState(false);
+
+  // Initialize navigation service
+  useEffect(() => {
+    navigationManager.setNavigation(navigate);
+  }, [navigate]);
+
+  // Proteção contra loading infinito
+  useEffect(() => {
+    if (isLoading) {
+      console.log('🔄 Sistema carregando...');
+      const timer = setTimeout(() => {
+        console.warn('⚠️ Loading demorou mais de 2 segundos');
+        setLoadingTimeout(true);
+      }, 2000);
+      return () => clearTimeout(timer);
+    } else {
+      console.log('✅ Sistema carregado!');
+      setLoadingTimeout(false);
+    }
+  }, [isLoading]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sapere-orange to-orange-600">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-white mx-auto mb-4"></div>
+          <h2 className="text-white text-xl font-semibold">Sistema Sapere</h2>
+          <p className="text-white/80 mt-2">Carregando...</p>
+          {loadingTimeout && (
+            <div className="mt-4 bg-white/10 backdrop-blur-sm rounded-lg p-4">
+              <p className="text-white text-sm">Isso está demorando mais que o esperado</p>
+              <button
+                onClick={() => {
+                  localStorage.clear();
+                  sessionStorage.clear();
+                  window.location.reload();
+                }}
+                className="mt-2 bg-white text-sapere-orange px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100"
+              >
+                Reiniciar Sistema
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     );
   }
 
   return (
     <Routes>
-      {/* Rota inicial */}
-      <Route path="/" element={<Home />} />
-      
-      {/* Rota pública de login */}
+      {/* Rota pública */}
       <Route 
         path="/login" 
-        element={<Login />} 
+        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />} 
       />
       
       {/* Rotas protegidas */}
-      <Route
-        path="/dashboard/*"
+      <Route 
+        path="/" 
+        element={<Navigate to="/dashboard" replace />} 
+      />
+      
+      <Route 
+        path="/dashboard" 
         element={
           <ProtectedRoute>
-            <Layout>
-              <Routes>
-                  {/* Dashboard Principal */}
-                  <Route path="/" element={<DashboardReal />} />
-                  
-                  {/* Páginas que serão implementadas */}
-                  <Route 
-                    path="/patients" 
-                    element={
-                      <ClinicalRoute>
-                        <PatientsReal />
-                      </ClinicalRoute>
-                    } 
-                  />
-                  
-                  <Route 
-                    path="/appointments" 
-                    element={
-                      <ClinicalRoute>
-                        <AppointmentsReal />
-                      </ClinicalRoute>
-                    } 
-                  />
-                  
-                  <Route 
-                    path="/calendar" 
-                    element={
-                      <ClinicalRoute>
-                        <AppointmentsReal />
-                      </ClinicalRoute>
-                    } 
-                  />
-                  
-                  <Route 
-                    path="/therapists" 
-                    element={
-                      <AdminRoute>
-                        <Therapists />
-                      </AdminRoute>
-                    } 
-                  />
-                  
-                  
-                  <Route 
-                    path="/communication" 
-                    element={
-                      <ClinicalRoute>
-                        <CommunicationReal />
-                      </ClinicalRoute>
-                    } 
-                  />
-                  
-                  <Route 
-                    path="/anamnese" 
-                    element={
-                      <ClinicalRoute>
-                        <AnamneseUpload />
-                      </ClinicalRoute>
-                    } 
-                  />
-                  
-                  <Route 
-                    path="/therapy" 
-                    element={
-                      <ClinicalRoute>
-                        <TherapyReal />
-                      </ClinicalRoute>
-                    } 
-                  />
+            <SimpleDashboard />
+          </ProtectedRoute>
+        } 
+      />
+      
+      <Route
+        path="/appointments"
+        element={
+          <ProtectedRoute>
+            <AppointmentManagement />
+          </ProtectedRoute>
+        }
+      />
 
-                  
-                  <Route 
-                    path="/administration" 
-                    element={
-                      <AdminRoute>
-                        <Administration />
-                      </AdminRoute>
-                    } 
-                  />
-                  
-                  <Route 
-                    path="/settings" 
-                    element={
-                      <AdminRoute>
-                        <div className="text-center p-8">
-                          <h2 className="text-xl font-semibold mb-4">Configurações da Clínica</h2>
-                          <p className="text-gray-600">Em construção - Apenas Administradores</p>
-                        </div>
-                      </AdminRoute>
-                    } 
-                  />
+      <Route
+        path="/patients"
+        element={
+          <ProtectedRoute>
+            <PatientManagement />
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route 
+        path="/profile" 
+        element={
+          <ProtectedLayout>
+            <Profile />
+          </ProtectedLayout>
+        } 
+      />
+      
+      <Route
+        path="/anamnese"
+        element={
+          <ProtectedRoute>
+            <AnamneseManagement />
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route 
+        path="/therapists" 
+        element={
+          <ProtectedLayout>
+            <Therapists />
+          </ProtectedLayout>
+        } 
+      />
+      
+      <Route
+        path="/administration"
+        element={
+          <ProtectedLayout>
+            <Administration />
+          </ProtectedLayout>
+        }
+      />
 
-                  <Route path="/profile" element={<Profile />} />
-                  
-                  {/* Página 404 para rotas não encontradas */}
-                  <Route 
-                    path="*" 
-                    element={
-                      <div className="text-center p-8">
-                        <h2 className="text-xl font-semibold mb-4">Página não encontrada</h2>
-                        <p className="text-gray-600">A página que você está procurando não existe.</p>
-                      </div>
-                    } 
-                  />
-                </Routes>
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <SystemSettings />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Rota 404 */}
+      <Route 
+        path="*" 
+        element={
+          <div className="min-h-screen flex items-center justify-center">
+            <div className="text-center">
+              <h1 className="text-2xl font-bold text-gray-800 mb-4">Página não encontrada</h1>
+              <p className="text-gray-600 mb-4">A página que você está procurando não existe.</p>
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="bg-sapere-orange text-white px-4 py-2 rounded-lg hover:bg-orange-600"
+              >
+                Ir para Dashboard
+              </button>
+            </div>
+          </div>
+        } 
+      />
     </Routes>
   );
 };
 
+// Componente raiz da aplicação
 const App: React.FC = () => {
   return (
     <AuthProvider>
-      <SystemNotificationsProvider>
-        <DashboardProvider>
-          <NotificationProvider>
-            <Router>
-              <AppContent />
-            </Router>
-          </NotificationProvider>
-        </DashboardProvider>
-      </SystemNotificationsProvider>
+      <NotificationProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </NotificationProvider>
     </AuthProvider>
   );
 };

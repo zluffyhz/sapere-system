@@ -161,20 +161,20 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
 
       // Gerar sessões de hoje
       const todayAppointments = appointments.filter((apt: Appointment) => {
-        const aptDate = new Date(apt.appointment_date || apt.inicio);
+        const aptDate = new Date(apt.inicio);
         return aptDate >= todayStart && aptDate < new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
       });
 
       const sessions: TodaySession[] = todayAppointments.map((apt: Appointment) => {
-        const patient = patients.find((p: Patient) => p.id === (apt.patient_id || apt.patientId));
-        const patientName = patient ? (patient.name || patient.nome) : 'Paciente não encontrado';
-        
+        const patient = patients.find((p: any) => p.id === apt.patientId);
+        const patientName = patient ? ((patient as any).name || (patient as any).nome) : 'Paciente não encontrado';
+
         return {
           id: apt.id,
           patientName,
           patientInitials: generateInitials(patientName),
-          professionalName: apt.therapist?.user?.name || apt.professional?.user?.name || 'Profissional',
-          time: new Date(apt.appointment_date || apt.inicio).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+          professionalName: (apt.professional?.user?.name || (apt as any).therapist?.user?.name || 'Profissional'),
+          time: new Date(apt.inicio).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
           status: apt.status as TodaySession['status'],
           color: getSessionColor(apt.status)
         };
@@ -187,10 +187,10 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
 
       // Adicionar pacientes recentes
       const recentPatients = patients
-        .sort((a: Patient, b: Patient) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime())
+        .sort((a: any, b: any) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime())
         .slice(0, 2);
 
-      recentPatients.forEach((patient: Patient) => {
+      recentPatients.forEach((patient: any) => {
         activities.push({
           id: `patient-${patient.id}`,
           type: 'patient_created',
@@ -221,19 +221,20 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
 
       // Adicionar consultas concluídas recentes
       const completedAppointments = appointments
-        .filter((apt: Appointment) => apt.status === 'completed' || apt.status === 'atendido')
-        .sort((a: Appointment, b: Appointment) => new Date(b.appointment_date || b.inicio).getTime() - new Date(a.appointment_date || a.inicio).getTime())
+        .filter((apt: Appointment) => apt.status === 'atendido')
+        .sort((a: Appointment, b: Appointment) => new Date(b.inicio).getTime() - new Date(a.inicio).getTime())
         .slice(0, 2);
 
       completedAppointments.forEach((apt: Appointment) => {
-        const patient = patients.find((p: Patient) => p.id === (apt.patient_id || apt.patientId));
+        const patient = patients.find((p: any) => p.id === apt.patientId);
+        const patientName = patient ? ((patient as any).name || (patient as any).nome) : 'Paciente';
         activities.push({
           id: `appointment-${apt.id}`,
           type: 'appointment_completed',
           title: 'Sessão finalizada',
-          description: `com ${patient?.name || patient?.nome || 'Paciente'}`,
-          user: apt.therapist?.user?.name || apt.professional?.user?.name || 'Profissional',
-          timestamp: getRelativeTime(new Date(apt.appointment_date || apt.inicio)),
+          description: `com ${patientName}`,
+          user: apt.professional?.user?.name || (apt as any).therapist?.user?.name || 'Profissional',
+          timestamp: getRelativeTime(new Date(apt.inicio)),
           color: 'bg-sapere-whatsapp'
         });
       });

@@ -48,9 +48,10 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
   const handleLogout = async () => {
     try {
       await logout();
+      navigate('/login?reason=logout');
     } catch (error) {
       console.error('Erro no logout:', error);
-      window.location.href = '/login?reason=logout';
+      navigate('/login?reason=logout');
     }
   };
 

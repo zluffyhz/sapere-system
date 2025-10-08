@@ -23,10 +23,10 @@ const Layout: React.FC<LayoutProps> = ({ children, showSidebar = true, isLoading
 
   if (isPageLoading || isLoading) {
     return (
-      <div className="min-h-screen bg-sapere-gray flex items-center justify-center">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="w-16 h-16 border-4 border-sapere-orange border-t-transparent rounded-full animate-spin"></div>
-          <div className="text-sapere-brown font-medium">Carregando...</div>
+      <div style={{ minHeight: '100vh', backgroundColor: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+          <div style={{ width: '64px', height: '64px', border: '4px solid #f59e0b', borderTop: '4px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+          <div style={{ color: '#92400e', fontWeight: '500' }}>Carregando...</div>
         </div>
       </div>
     );

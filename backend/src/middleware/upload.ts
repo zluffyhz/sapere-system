@@ -145,3 +145,6 @@ export const handleUploadError = (error: any, req: Request, res: any, next: any)
     error: process.env.NODE_ENV === 'development' ? error.message : undefined
   });
 };
+
+// Middleware para upload de documento único (para anamnese)
+export const uploadSingleDocument = upload.single('document');

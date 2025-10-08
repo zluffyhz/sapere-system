@@ -1,0 +1,19 @@
+Este é um arquivo de teste para simular um documento de anamnese.
+
+ANAMNESE PSICOLÓGICA
+
+Nome do Paciente: João da Silva
+Data de Nascimento: 15/03/1985
+Data da Avaliação: 11/09/2025
+
+Motivo da Consulta:
+O paciente procurou atendimento psicológico relatando sintomas de ansiedade e dificuldades de concentração no trabalho.
+
+Histórico Familiar:
+Mãe com histórico de depressão, pai sem histórico de transtornos mentais.
+
+Histórico Pessoal:
+Primeiro episódio de ansiedade aos 25 anos, sem tratamento prévio.
+
+Observações:
+Paciente demonstra boa capacidade de insight e motivação para o tratamento.

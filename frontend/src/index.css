@@ -20,6 +20,21 @@
 }
 
 @layer components {
+  /* Animations */
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
   /* Professional Medical UI Components */
   .btn-primary {
     @apply bg-sapere-orange hover:bg-orange-600 text-white font-semibold py-2.5 px-5 rounded-lg border border-sapere-orange hover:border-orange-600 transition-all duration-150 shadow-sm hover:shadow-md;

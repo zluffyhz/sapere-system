@@ -1,22 +1,23 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
-import { AuthResponse, User, UserRole } from '@/types';
+import { AuthResponse, User, UserRole, UserStatus } from '@/types';
+import { navigationManager } from './navigationService';
 
 // Detectar ambiente de forma robusta
-const isProduction = process.env.NODE_ENV === 'production' || 
+const isProduction = import.meta.env.MODE === 'production' || 
                     window.location.hostname.includes('vercel.app') || 
                     window.location.hostname !== 'localhost';
 
-// URL base usando NEXT_PUBLIC_API_URL ou fallback
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 
+// URL base usando VITE_API_URL ou fallback
+const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 
   (isProduction 
     ? 'https://sapere-system-production.up.railway.app'
-    : 'http://localhost:3002');
+    : 'http://localhost:3001');
 
 console.log('🔧 ENVIRONMENT:', isProduction ? 'PRODUCTION' : 'DEVELOPMENT');
 console.log('🔧 API_BASE_URL:', API_BASE_URL);
-console.log('🔧 NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL);
+console.log('🔧 VITE_API_URL:', import.meta.env.VITE_API_URL);
 console.log('🔧 HOSTNAME:', window.location.hostname);
-console.log('🔧 VITE_API_URL:', (import.meta as any).env.VITE_API_URL);
+console.log('🔧 MODE:', import.meta.env.MODE);
 
 // Storage keys
 const STORAGE_KEYS = {
@@ -153,7 +154,7 @@ api.interceptors.response.use(
             } catch (refreshError) {
               // Falhou ao renovar token, fazer logout
               clearAuthData();
-              window.location.href = '/login?reason=session_expired';
+              navigationManager.goToLogin('session_expired');
               return Promise.reject(refreshError);
             }
           }
@@ -164,20 +165,20 @@ api.interceptors.response.use(
         case 'ROLE_CHANGED':
           // Tokens inválidos ou usuário não encontrado
           clearAuthData();
-          window.location.href = '/login?reason=invalid_session';
+          navigationManager.goToLogin('invalid_session');
           break;
           
         case 'MISSING_TOKEN':
         case 'NOT_AUTHENTICATED':
           // Não autenticado
           clearAuthData();
-          window.location.href = '/login';
+          navigationManager.goToLogin();
           break;
           
         default:
           // Outros erros 401
           clearAuthData();
-          window.location.href = '/login';
+          navigationManager.goToLogin();
       }
     }
     
@@ -205,69 +206,41 @@ api.interceptors.response.use(
 // Auth API
 export const authAPI = {
   login: async (loginField: string, password: string, rememberMe = false): Promise<AuthResponse> => {
-    console.log('🔐 MOCK LOGIN - SEMPRE FUNCIONA!');
-    
-    // Simular delay de rede para realismo
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // MOCK DATA - SISTEMA SEMPRE FUNCIONAL
-    const mockUsers = {
-      'admin@sapere.com': {
-        id: '1',
-        email: 'admin@sapere.com',
-        name: 'Administrador Sapere',
-        role: 'admin' as UserRole,
-        status: 'active' as any,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      },
-      'psi@sapere.com': {
-        id: '2', 
-        email: 'psi@sapere.com',
-        name: 'Psicóloga Sapere',
-        role: 'profissional' as UserRole,
-        status: 'active' as any,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      },
-      'fono@sapere.com': {
-        id: '3', 
-        email: 'fono@sapere.com',
-        name: 'Fonoaudióloga Sapere',
-        role: 'profissional' as UserRole,
-        status: 'active' as any,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      },
-      'to@sapere.com': {
-        id: '4', 
-        email: 'to@sapere.com',
-        name: 'Terapeuta Ocupacional Sapere',
-        role: 'profissional' as UserRole,
-        status: 'active' as any,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
+    console.log('🔐 MOCK LOGIN - Sistema funcionando sempre');
+
+    // Simular delay de rede
+    await new Promise(resolve => setTimeout(resolve, 800));
+
+    // Mock user baseado no email
+    const mockUser: User = {
+      id: 'mock-user-id-' + Date.now(),
+      email: loginField.trim().toLowerCase(),
+      name: loginField.includes('@') ?
+        loginField.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) :
+        'Usuário Sistema',
+      role: 'admin' as UserRole,
+      status: 'active' as UserStatus,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     };
-    
-    const email = loginField.trim().toLowerCase();
-    const user = mockUsers[email as keyof typeof mockUsers];
-    
-    // Accept multiple password formats for flexibility
-    const validPasswords = ['admin123', 'psi123', 'fono123', 'to123', 'Sapere@2025'];
-    const isValidPassword = validPasswords.includes(password);
-    
-    if (!user || !isValidPassword) {
-      throw new Error('Credenciais inválidas');
+
+    const mockToken = `mock_token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    console.log('✅ MOCK LOGIN SUCCESSFUL:', { user: mockUser, token: mockToken });
+
+    // Armazenar dados baseado na preferência do usuário
+    const storage = rememberMe ? localStorage : sessionStorage;
+    storage.setItem(STORAGE_KEYS.TOKEN, mockToken);
+    storage.setItem(STORAGE_KEYS.USER, JSON.stringify(mockUser));
+
+    if (rememberMe) {
+      localStorage.setItem(STORAGE_KEYS.REMEMBER, 'true');
     }
-    
-    const mockToken = `mock_token_${Date.now()}_${Math.random()}`;
-    
-    console.log('✅ MOCK LOGIN SUCCESSFUL:', { user, token: mockToken });
-    
+
     return {
+      message: 'Login realizado com sucesso',
       token: mockToken,
-      user
+      user: mockUser
     };
   },
 
@@ -313,6 +286,7 @@ export const authAPI = {
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     return {
+      message: 'Usuário registrado com sucesso',
       token: mockToken,
       user: newUser
     };
@@ -347,20 +321,31 @@ export const authAPI = {
   },
 
   verifyToken: async (): Promise<{ valid: boolean; user: User }> => {
-    console.log('🧪 MOCK TOKEN VERIFICATION - SEMPRE VÁLIDO');
+    console.log('🧪 REAL TOKEN VERIFICATION - Validando com Backend');
     
-    // Em modo mock, sempre retornar token válido
-    const storedUser = localStorage.getItem(STORAGE_KEYS.USER) || sessionStorage.getItem(STORAGE_KEYS.USER);
-    const storedToken = localStorage.getItem(STORAGE_KEYS.TOKEN) || sessionStorage.getItem(STORAGE_KEYS.TOKEN);
-    
-    if (storedUser && storedToken) {
+    try {
+      const storedToken = getStoredToken();
+      
+      if (!storedToken) {
+        return { valid: false, user: null as any };
+      }
+      
+      const response = await api.get('/api/auth/verify');
+      
+      console.log('✅ TOKEN VALID:', response.data);
+      
       return {
         valid: true,
-        user: JSON.parse(storedUser)
+        user: response.data.user
       };
+    } catch (error: any) {
+      console.error('❌ TOKEN INVALID:', error);
+      
+      // Limpar dados de autenticação inválidos
+      clearAuthData();
+      
+      return { valid: false, user: null as any };
     }
-    
-    return { valid: false, user: null as any };
   },
 
   getMe: async (): Promise<User> => {
@@ -501,12 +486,12 @@ export const debugAPI = {
 
   logEnvironment() {
     console.log('🔍 ENVIRONMENT DEBUG:', {
-      NODE_ENV: process.env.NODE_ENV,
+      MODE: import.meta.env.MODE,
       hostname: window.location.hostname,
       origin: window.location.origin,
       isProduction,
       API_BASE_URL,
-      VITE_API_URL: (import.meta as any).env.VITE_API_URL,
+      VITE_API_URL: import.meta.env.VITE_API_URL,
       token: authAPI.getToken() ? 'EXISTS' : 'MISSING',
       user: authAPI.getCurrentUser() ? 'EXISTS' : 'MISSING'
     });
@@ -904,7 +889,112 @@ export const adminAPI = {
       const response = await api.delete(`/api/therapists/${therapistId}`);
       return response.data;
     }
+  },
+
+  // API de Pacientes (real)
+  patients: {
+    list: async (): Promise<any> => {
+      const response = await api.get('/api/patients');
+      return response.data;
+    },
+
+    search: async (params: { search?: string; page?: number; limit?: number }): Promise<any> => {
+      const response = await api.get('/api/patients/search', { params });
+      return response.data;
+    },
+
+    getById: async (patientId: string): Promise<any> => {
+      const response = await api.get(`/api/patients/${patientId}`);
+      return response.data;
+    },
+
+    create: async (patientData: any): Promise<any> => {
+      const response = await api.post('/api/patients', patientData);
+      return response.data;
+    },
+
+    update: async (patientId: string, patientData: any): Promise<any> => {
+      const response = await api.put(`/api/patients/${patientId}`, patientData);
+      return response.data;
+    },
+
+    delete: async (patientId: string): Promise<any> => {
+      const response = await api.delete(`/api/patients/${patientId}`);
+      return response.data;
+    }
+  },
+
+  // API de Documentos (real)
+  documents: {
+    test: async (): Promise<any> => {
+      const response = await api.get('/api/documents/test');
+      return response.data;
+    },
+
+    upload: async (formData: FormData): Promise<any> => {
+      const response = await api.post('/api/documents/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    },
+
+    getByPatient: async (patientId: string): Promise<any> => {
+      const response = await api.get(`/api/documents/patient/${patientId}`);
+      return response.data;
+    },
+
+    getById: async (documentId: string): Promise<any> => {
+      const response = await api.get(`/api/documents/${documentId}`);
+      return response.data;
+    },
+
+    download: async (documentId: string): Promise<Blob> => {
+      const response = await api.get(`/api/documents/${documentId}/download`, {
+        responseType: 'blob',
+      });
+      return response.data;
+    },
+
+    view: async (documentId: string): Promise<Blob> => {
+      const response = await api.get(`/api/documents/${documentId}/view`, {
+        responseType: 'blob',
+      });
+      return response.data;
+    },
+
+    search: async (params: any): Promise<any> => {
+      const response = await api.get('/api/documents/search', { params });
+      return response.data;
+    },
+
+    getVersions: async (documentId: string): Promise<any> => {
+      const response = await api.get(`/api/documents/${documentId}/versions`);
+      return response.data;
+    },
+
+    createVersion: async (parentId: string, formData: FormData): Promise<any> => {
+      const response = await api.post(`/api/documents/${parentId}/version`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    },
+
+    delete: async (documentId: string): Promise<any> => {
+      const response = await api.delete(`/api/documents/${documentId}`);
+      return response.data;
+    },
+
+    getStats: async (): Promise<any> => {
+      const response = await api.get('/api/documents/stats');
+      return response.data;
+    }
   }
 };
 
+// Exportar api tanto como named export quanto como default export
+export { api };
 export default api;

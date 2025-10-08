@@ -7,6 +7,10 @@ export type CommunicationType = 'sms' | 'email' | 'whatsapp' | 'call';
 export type CommunicationStatus = 'pending' | 'sent' | 'delivered' | 'read' | 'failed' | 'cancelled';
 export type RecordType = 'initial_assessment' | 'evolution' | 'discharge' | 'intercurrence' | 'family_guidance';
 export type AttachmentType = 'document' | 'image' | 'video' | 'audio' | 'report';
+export type SessionStatus = 'active' | 'paused' | 'completed' | 'cancelled';
+export type AppointmentPriority = 'low' | 'normal' | 'high' | 'urgent';
+export type ConflictResolution = 'manual' | 'reschedule_current' | 'reschedule_conflicting' | 'notify_only';
+export type DragMode = 'time' | 'therapist' | 'both' | 'disabled';
 
 // Interfaces base
 export interface User {
@@ -47,15 +51,34 @@ export interface Therapist {
   professional_id?: string; // CRP, CRO, etc.
   specialties: string[];
   bio?: string;
+  bio_extended?: string;
   experience_years?: number;
   languages: string[];
   available_hours: AvailableHours;
   consultation_duration: number;
   max_daily_appointments: number;
   active: boolean;
+  
+  // Campos expandidos para gestão completa
+  avatar_url?: string;
+  certifications?: string[]; // Lista de certificações
+  social_links?: SocialLinks;
+  timezone?: string;
+  language_preference?: string;
+  hourly_rate?: number;
+  
+  // Métricas de produtividade (calculadas)
+  total_sessions?: number;
+  total_patients?: number;
+  avg_session_duration?: number;
+  patient_satisfaction_score?: number;
+  cancellation_rate?: number;
+  
   created_at: Date;
   updated_at: Date;
   user?: User; // Relacionamento
+  productivity_stats?: TherapistProductivity[];
+  specialties_details?: Specialty[];
 }
 
 export interface AvailableHours {
@@ -71,6 +94,81 @@ export interface AvailableHours {
 export interface TimeSlot {
   start: string; // HH:MM
   end: string;   // HH:MM
+}
+
+// Novas interfaces para sistema de especialidades e produtividade
+export interface SocialLinks {
+  linkedin?: string;
+  instagram?: string;
+  website?: string;
+  youtube?: string;
+}
+
+export interface Specialty {
+  id: string;
+  name: string;
+  description?: string;
+  category: string; // 'neuropsicologia', 'terapia_comportamental', 'avaliacao', etc.
+  icon?: string;
+  color?: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface TherapistSpecialty {
+  therapist_id: string;
+  specialty_id: string;
+  experience_level: number; // 1-5 (1=iniciante, 5=especialista)
+  certified: boolean;
+  certification_date?: Date;
+  certification_body?: string;
+  created_at: Date;
+  specialty?: Specialty; // Relacionamento
+}
+
+export interface TherapistProductivity {
+  id: string;
+  therapist_id: string;
+  period_start: Date;
+  period_end: Date;
+  total_sessions: number;
+  total_duration: number; // em segundos
+  avg_session_duration: number; // em segundos
+  total_patients: number;
+  new_patients: number;
+  returning_patients: number;
+  cancellation_rate: number; // percentual
+  no_show_rate: number; // percentual
+  patient_satisfaction_score?: number; // 1-5
+  revenue_generated?: number;
+  sessions_per_day_avg: number;
+  peak_hours?: string[]; // ['09:00', '14:00', '16:00']
+  created_at: Date;
+  updated_at: Date;
+  therapist?: Therapist; // Relacionamento
+}
+
+export interface PatientFeedback {
+  id: string;
+  patient_id: string;
+  therapist_id: string;
+  session_id?: string;
+  appointment_id?: string;
+  rating: number; // 1-5
+  comment?: string;
+  categories?: FeedbackCategory;
+  anonymous: boolean;
+  created_at: Date;
+  patient?: Patient; // Relacionamento
+  therapist?: Therapist; // Relacionamento
+}
+
+export interface FeedbackCategory {
+  professionalism: number; // 1-5
+  communication: number; // 1-5
+  effectiveness: number; // 1-5
+  punctuality: number; // 1-5
+  environment: number; // 1-5
 }
 
 export interface EmergencyContact {
@@ -154,12 +252,64 @@ export interface Appointment {
   cancelled_by?: string;
   reminder_sent_at?: Date;
   reminder_count: number;
+  
+  // Campos para drag-and-drop e calendário
+  is_draggable: boolean; // Pode ser movido no calendário
+  drag_constraints?: DragConstraints; // Restrições de movimento
+  color_code?: string; // Cor no calendário (#FF0000)
+  priority: AppointmentPriority; // Prioridade visual
+  recurring_pattern?: RecurringPattern; // Padrão de recorrência
+  conflict_resolution?: ConflictResolution; // Como resolver conflitos
+  auto_reschedule: boolean; // Reagendar automaticamente em conflitos
+  
   created_at: Date;
   updated_at: Date;
   created_by?: string;
   updated_by?: string;
   patient?: Patient; // Relacionamento
   therapist?: Therapist; // Relacionamento
+}
+
+// Interfaces para drag-and-drop e calendário
+export interface DragConstraints {
+  allowed_days?: string[]; // ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
+  min_time?: string; // '08:00'
+  max_time?: string; // '18:00'
+  allowed_therapists?: string[]; // Lista de therapist IDs permitidos
+  min_duration?: number; // Duração mínima em minutos
+  max_duration?: number; // Duração máxima em minutos
+  buffer_time?: number; // Tempo de intervalo obrigatório em minutos
+}
+
+export interface RecurringPattern {
+  type: 'daily' | 'weekly' | 'monthly' | 'custom';
+  interval: number; // A cada X unidades (1 = toda semana, 2 = a cada 2 semanas)
+  days_of_week?: number[]; // [1, 3, 5] para segunda, quarta, sexta (0 = domingo)
+  end_date?: Date; // Data de término da recorrência
+  occurrences?: number; // Número de ocorrências (alternativa ao end_date)
+}
+
+export interface ConflictDetection {
+  appointment_id: string;
+  conflicting_appointment_id: string;
+  conflict_type: 'time_overlap' | 'therapist_unavailable' | 'patient_double_booking' | 'resource_conflict';
+  overlap_start: Date;
+  overlap_end: Date;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  suggested_resolution: ConflictResolution;
+  alternative_slots?: TimeSlot[];
+}
+
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  start_time: Date;
+  end_time: Date;
+  type: 'appointment' | 'break' | 'unavailable' | 'session';
+  color: string;
+  is_draggable: boolean;
+  is_resizable: boolean;
+  metadata?: any; // Dados adicionais específicos do tipo
 }
 
 export interface Goal {
@@ -335,4 +485,26 @@ export interface ActivityLog {
   ip_address?: string;
   user_agent?: string;
   created_at: Date;
+}
+
+export interface Session {
+  id: string;
+  appointment_id?: string;
+  therapist_id: string;
+  patient_id: string;
+  status: SessionStatus;
+  start_time: Date;
+  pause_time?: Date;
+  resume_time?: Date;
+  end_time?: Date;
+  total_duration?: number; // em segundos
+  pause_duration?: number; // em segundos
+  notes?: string;
+  created_at: Date;
+  updated_at: Date;
+  created_by?: string;
+  updated_by?: string;
+  appointment?: Appointment; // Relacionamento
+  therapist?: Therapist; // Relacionamento
+  patient?: Patient; // Relacionamento
 }

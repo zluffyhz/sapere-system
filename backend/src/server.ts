@@ -6,6 +6,11 @@ import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes';
 import healthRoutes from './routes/health.routes';
+import sessionRoutes from './routes/sessions';
+import calendarRoutes from './routes/calendar';
+import therapistRoutes from './routes/therapists';
+import documentRoutes from './routes/documents';
+import patientRoutes from './routes/patients';
 
 // Carregar variáveis de ambiente
 dotenv.config();
@@ -43,12 +48,24 @@ const corsOptions = {
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
-      // Em produção, ser mais permissivo com Vercel
-      if (process.env.NODE_ENV === 'production' && origin.includes('vercel.app')) {
-        callback(null, true);
+      // Em produção, verificar padrões seguros do Vercel
+      if (process.env.NODE_ENV === 'production') {
+        // Apenas permitir domínios específicos do Vercel
+        const allowedVercelPatterns = [
+          /^https:\/\/sapere-system.*\.vercel\.app$/,
+          /^https:\/\/sapere-system\.vercel\.app$/
+        ];
+        
+        const isAllowedVercel = allowedVercelPatterns.some(pattern => pattern.test(origin));
+        if (isAllowedVercel) {
+          callback(null, true);
+        } else {
+          console.log('CORS bloqueado para origem:', origin);
+          callback(null, false);
+        }
       } else {
         console.log('CORS bloqueado para origem:', origin);
-        callback(null, false); // Mudança importante: false ao invés de Error
+        callback(null, false);
       }
     }
   },
@@ -68,14 +85,18 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false
 }));
 
-// Rate limiting
+// Rate limiting - otimizado para produção
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: process.env.NODE_ENV === 'production' ? 200 : 1000, // Mais restritivo em produção
   standardHeaders: true,
   legacyHeaders: false,
   keyGenerator: (req) => {
     return req.ip || req.socket.remoteAddress || 'unknown';
+  },
+  message: {
+    error: 'Muitas requisições. Tente novamente em alguns minutos.',
+    retryAfter: 15 * 60 // 15 minutos em segundos
   }
 });
 
@@ -87,8 +108,11 @@ const loginLimiter = rateLimit({
   legacyHeaders: false
 });
 
-// Aplicar rate limit
+// Aplicar rate limit geral
 app.use('/api/', limiter);
+
+// Rate limit específico para login ANTES das rotas
+app.use('/api/auth/login', loginLimiter);
 
 // Middlewares para parsing
 app.use(express.json());
@@ -103,9 +127,12 @@ app.use((req, res, next) => {
 // Rotas
 app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/sessions', sessionRoutes);
+app.use('/api/calendar', calendarRoutes);
+app.use('/api/therapists', therapistRoutes);
+app.use('/api/documents', documentRoutes);
+app.use('/api/patients', patientRoutes);
 
-// Rate limit específico para login DEPOIS das rotas
-app.use('/api/auth/login', loginLimiter);
 
 // Rota base da API
 app.get('/api', (req, res) => {
@@ -117,7 +144,8 @@ app.get('/api', (req, res) => {
     endpoints: {
       health: '/api/health',
       login: 'POST /api/auth/login',
-      verify: 'GET /api/auth/verify'
+      verify: 'GET /api/auth/verify',
+      sessions: '/api/sessions/test'
     }
   });
 });
@@ -163,7 +191,7 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 });
 
 // Iniciar servidor
-const PORT = process.env.PORT || 3333;
+const PORT = process.env.PORT || 3001;
 
 app.listen(PORT, () => {
   console.log(`
