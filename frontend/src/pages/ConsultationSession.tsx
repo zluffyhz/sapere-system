@@ -1,16 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import Layout from '@/components/common/Layout';
-import {
-  Play,
-  Square,
-  Clock,
-  User,
-  Save,
-  FileText,
-  AlertCircle
-} from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '@/context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { useAppNavigation } from '@/components/Navigation';
 
 interface Patient {
   id: string;
@@ -33,7 +25,10 @@ interface Session {
 }
 
 const ConsultationSession: React.FC = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const { goToDashboard } = useAppNavigation();
+
   const [patients, setPatients] = useState<Patient[]>([]);
   const [selectedPatient, setSelectedPatient] = useState<string>('');
   const [activeSession, setActiveSession] = useState<Session | null>(null);
@@ -101,24 +96,22 @@ const ConsultationSession: React.FC = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      if (response.data.session) {
-        setActiveSession(response.data.session);
+      if (response.data) {
+        setActiveSession(response.data);
         setIsSessionActive(true);
-        setEvolution(response.data.session.evolution || '');
-        setObservations(response.data.session.observations || '');
-        setActivities(response.data.session.activities || '');
+        setSelectedPatient(response.data.patient_id);
+
+        // Carregar dados salvos
+        if (response.data.evolution) setEvolution(response.data.evolution);
+        if (response.data.observations) setObservations(response.data.observations);
+        if (response.data.activities) setActivities(response.data.activities);
       }
     } catch (error) {
-      console.error('Erro ao verificar sessão ativa:', error);
+      console.log('Nenhuma sessão ativa');
     }
   };
 
   const startSession = async () => {
-    if (!selectedPatient) {
-      alert('Selecione um paciente');
-      return;
-    }
-
     setIsLoading(true);
     try {
       const token = localStorage.getItem('token');
@@ -128,20 +121,8 @@ const ConsultationSession: React.FC = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      setActiveSession(response.data.session);
+      setActiveSession(response.data);
       setIsSessionActive(true);
-      setElapsedTime(0);
-
-      // Limpar campos
-      setEvolution('');
-      setObservations('');
-      setActivities('');
-      setHomework('');
-      setNextSteps('');
-      setPatientMood('');
-      setSessionQuality(3);
-
-      console.log('✅ Sessão iniciada:', response.data.session);
     } catch (error: any) {
       console.error('Erro ao iniciar sessão:', error);
       alert(error.response?.data?.error || 'Erro ao iniciar consulta');
@@ -158,42 +139,50 @@ const ConsultationSession: React.FC = () => {
       const token = localStorage.getItem('token');
       await axios.patch(
         `${import.meta.env.VITE_API_URL}/sessions/${activeSession.id}/evolution`,
-        { evolution, observations, activities },
+        {
+          evolution,
+          observations,
+          activities,
+          homework,
+          nextSteps,
+          patientMood,
+          sessionQuality
+        },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      alert('Evolução salva com sucesso!');
-    } catch (error) {
-      console.error('Erro ao salvar evolução:', error);
-      alert('Erro ao salvar evolução');
+      alert('Rascunho salvo com sucesso!');
+    } catch (error: any) {
+      console.error('Erro ao salvar:', error);
+      alert('Erro ao salvar rascunho');
     } finally {
       setIsSaving(false);
     }
   };
 
   const endSession = async () => {
-    if (!activeSession) return;
-
-    if (!evolution || evolution.trim() === '') {
-      alert('Por favor, preencha o campo "Evolução do Paciente" antes de finalizar a consulta.');
+    if (!evolution.trim()) {
+      alert('Por favor, preencha o campo "Evolução do Paciente" antes de finalizar.');
       return;
     }
 
-    if (!confirm('Deseja finalizar a consulta?')) return;
+    if (!confirm('Tem certeza que deseja finalizar esta consulta?')) {
+      return;
+    }
 
     setIsLoading(true);
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        `${import.meta.env.VITE_API_URL}/sessions/${activeSession.id}/end`,
+        `${import.meta.env.VITE_API_URL}/sessions/${activeSession!.id}/end`,
         {
           evolution,
           observations,
           activities,
           homework,
-          next_steps: nextSteps,
-          patient_mood: patientMood,
-          session_quality: sessionQuality,
+          nextSteps,
+          patientMood,
+          sessionQuality
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -228,39 +217,116 @@ const ConsultationSession: React.FC = () => {
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const commonStyle = {
+    fontFamily: 'Arial, sans-serif',
+    boxSizing: 'border-box' as const
+  };
+
+  const buttonStyle = {
+    ...commonStyle,
+    padding: '10px 20px',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: '500' as const
+  };
+
+  const inputStyle = {
+    ...commonStyle,
+    width: '100%',
+    padding: '10px',
+    border: '1px solid #ddd',
+    borderRadius: '5px',
+    fontSize: '14px'
+  };
+
   return (
-    <Layout>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-900">Consulta</h1>
+    <div style={{ ...commonStyle, backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
+      {/* Header */}
+      <div style={{
+        backgroundColor: '#f59e0b',
+        color: 'white',
+        padding: '20px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <button
+            onClick={goToDashboard}
+            style={{
+              ...buttonStyle,
+              backgroundColor: 'rgba(255,255,255,0.2)',
+              color: 'white',
+              border: '1px solid rgba(255,255,255,0.3)'
+            }}
+          >
+            ← Dashboard
+          </button>
+          <div>
+            <h1 style={{ margin: '0', fontSize: '24px', fontWeight: 'bold' }}>
+              ⏰ Sistema de Consulta
+            </h1>
+            <p style={{ margin: '5px 0 0 0', opacity: '0.9' }}>
+              {isSessionActive ? `Paciente: ${activeSession?.patient.name}` : 'Iniciar nova consulta'}
+            </p>
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
           {isSessionActive && (
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 bg-green-50 px-4 py-2 rounded-lg">
-                <Clock className="w-5 h-5 text-green-600 animate-pulse" />
-                <span className="text-2xl font-mono font-bold text-green-600">
-                  {formatTime(elapsedTime)}
-                </span>
-              </div>
+            <div style={{
+              backgroundColor: 'rgba(34,197,94,0.2)',
+              border: '2px solid rgba(34,197,94,0.8)',
+              padding: '10px 20px',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px'
+            }}>
+              <span style={{ fontSize: '24px' }}>⏱️</span>
+              <span style={{ fontSize: '24px', fontFamily: 'monospace', fontWeight: 'bold', color: '#22c55e' }}>
+                {formatTime(elapsedTime)}
+              </span>
             </div>
           )}
+          <span>{user?.name}</span>
+          <button onClick={logout} style={{
+            ...buttonStyle,
+            backgroundColor: 'rgba(255,255,255,0.2)',
+            color: 'white',
+            border: '1px solid rgba(255,255,255,0.3)'
+          }}>
+            Sair
+          </button>
         </div>
+      </div>
+
+      <div style={{ padding: '30px', maxWidth: '1200px', margin: '0 auto' }}>
 
         {!isSessionActive ? (
-          // Seleção de Paciente
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+          /* Seleção de Paciente */
+          <div style={{
+            backgroundColor: 'white',
+            padding: '30px',
+            borderRadius: '10px',
+            boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+            marginBottom: '20px'
+          }}>
+            <h2 style={{ color: '#1f2937', marginBottom: '20px', fontSize: '20px', fontWeight: '600' }}>
               Iniciar Nova Consulta
             </h2>
 
-            <div className="space-y-4">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151', fontSize: '14px' }}>
                   Selecione o Paciente
                 </label>
                 <select
                   value={selectedPatient}
                   onChange={(e) => setSelectedPatient(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sapere-orange focus:border-transparent"
+                  style={inputStyle}
                 >
                   <option value="">Selecione um paciente...</option>
                   {patients.map((patient) => (
@@ -274,35 +340,42 @@ const ConsultationSession: React.FC = () => {
               <button
                 onClick={startSession}
                 disabled={!selectedPatient || isLoading}
-                className="flex items-center gap-2 bg-sapere-orange text-white px-6 py-3 rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                style={{
+                  ...buttonStyle,
+                  backgroundColor: !selectedPatient || isLoading ? '#d1d5db' : '#10b981',
+                  color: 'white',
+                  padding: '15px 25px',
+                  fontSize: '16px',
+                  cursor: !selectedPatient || isLoading ? 'not-allowed' : 'pointer'
+                }}
               >
-                <Play className="w-5 h-5" />
-                {isLoading ? 'Iniciando...' : 'Iniciar Consulta'}
+                ▶️ {isLoading ? 'Iniciando...' : 'Iniciar Consulta'}
               </button>
             </div>
           </div>
         ) : (
-          // Consulta em Andamento
-          <div className="space-y-6">
+          /* Consulta em Andamento */
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {/* Informações do Paciente */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <User className="w-6 h-6 text-sapere-orange" />
-                <h2 className="text-xl font-semibold text-gray-900">
-                  Paciente em Atendimento
-                </h2>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
+            <div style={{
+              backgroundColor: 'white',
+              padding: '25px',
+              borderRadius: '10px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            }}>
+              <h3 style={{ color: '#1f2937', marginBottom: '15px', fontSize: '18px', fontWeight: '600' }}>
+                👤 Paciente em Atendimento
+              </h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px' }}>
                 <div>
-                  <p className="text-sm text-gray-600">Nome</p>
-                  <p className="text-lg font-semibold text-gray-900">
+                  <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '5px' }}>Nome</p>
+                  <p style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937' }}>
                     {activeSession?.patient.name}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Email</p>
-                  <p className="text-lg text-gray-900">
+                  <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '5px' }}>Email</p>
+                  <p style={{ fontSize: '16px', color: '#1f2937' }}>
                     {activeSession?.patient.email || 'Não informado'}
                   </p>
                 </div>
@@ -310,27 +383,34 @@ const ConsultationSession: React.FC = () => {
             </div>
 
             {/* Formulário de Evolução */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <FileText className="w-6 h-6 text-sapere-orange" />
-                  <h2 className="text-xl font-semibold text-gray-900">
-                    Registro da Consulta
-                  </h2>
-                </div>
+            <div style={{
+              backgroundColor: 'white',
+              padding: '25px',
+              borderRadius: '10px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h3 style={{ color: '#1f2937', fontSize: '18px', fontWeight: '600', margin: '0' }}>
+                  📋 Registro da Consulta
+                </h3>
                 <button
                   onClick={saveEvolution}
                   disabled={isSaving}
-                  className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                  style={{
+                    ...buttonStyle,
+                    backgroundColor: '#3b82f6',
+                    color: 'white',
+                    cursor: isSaving ? 'not-allowed' : 'pointer',
+                    opacity: isSaving ? 0.5 : 1
+                  }}
                 >
-                  <Save className="w-4 h-4" />
-                  {isSaving ? 'Salvando...' : 'Salvar Rascunho'}
+                  💾 {isSaving ? 'Salvando...' : 'Salvar Rascunho'}
                 </button>
               </div>
 
-              <div className="space-y-4">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151', fontSize: '14px' }}>
                     Evolução do Paciente *
                   </label>
                   <textarea
@@ -338,15 +418,15 @@ const ConsultationSession: React.FC = () => {
                     onChange={(e) => setEvolution(e.target.value)}
                     rows={8}
                     placeholder="Descreva a evolução do paciente nesta consulta..."
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sapere-orange focus:border-transparent resize-none"
+                    style={{ ...inputStyle, resize: 'vertical' as const }}
                   />
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '5px' }}>
                     Este campo é obrigatório e será salvo no prontuário do paciente
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151', fontSize: '14px' }}>
                     Atividades Realizadas
                   </label>
                   <textarea
@@ -354,12 +434,12 @@ const ConsultationSession: React.FC = () => {
                     onChange={(e) => setActivities(e.target.value)}
                     rows={4}
                     placeholder="Descreva as atividades realizadas durante a consulta..."
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sapere-orange focus:border-transparent resize-none"
+                    style={{ ...inputStyle, resize: 'vertical' as const }}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151', fontSize: '14px' }}>
                     Observações Gerais
                   </label>
                   <textarea
@@ -367,12 +447,12 @@ const ConsultationSession: React.FC = () => {
                     onChange={(e) => setObservations(e.target.value)}
                     rows={4}
                     placeholder="Observações adicionais sobre a consulta..."
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sapere-orange focus:border-transparent resize-none"
+                    style={{ ...inputStyle, resize: 'vertical' as const }}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151', fontSize: '14px' }}>
                     Tarefas para Casa
                   </label>
                   <textarea
@@ -380,12 +460,12 @@ const ConsultationSession: React.FC = () => {
                     onChange={(e) => setHomework(e.target.value)}
                     rows={3}
                     placeholder="Tarefas ou exercícios para o paciente realizar..."
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sapere-orange focus:border-transparent resize-none"
+                    style={{ ...inputStyle, resize: 'vertical' as const }}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151', fontSize: '14px' }}>
                     Próximos Passos
                   </label>
                   <textarea
@@ -393,19 +473,19 @@ const ConsultationSession: React.FC = () => {
                     onChange={(e) => setNextSteps(e.target.value)}
                     rows={3}
                     placeholder="Planejamento para as próximas consultas..."
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sapere-orange focus:border-transparent resize-none"
+                    style={{ ...inputStyle, resize: 'vertical' as const }}
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px' }}>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151', fontSize: '14px' }}>
                       Humor do Paciente
                     </label>
                     <select
                       value={patientMood}
                       onChange={(e) => setPatientMood(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sapere-orange focus:border-transparent"
+                      style={inputStyle}
                     >
                       <option value="">Selecione...</option>
                       <option value="Muito Positivo">😊 Muito Positivo</option>
@@ -417,19 +497,22 @@ const ConsultationSession: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151', fontSize: '14px' }}>
                       Qualidade da Sessão (1-5)
                     </label>
-                    <div className="flex gap-2">
+                    <div style={{ display: 'flex', gap: '8px' }}>
                       {[1, 2, 3, 4, 5].map((value) => (
                         <button
                           key={value}
                           onClick={() => setSessionQuality(value)}
-                          className={`flex-1 py-3 rounded-lg font-semibold transition-colors ${
-                            sessionQuality === value
-                              ? 'bg-sapere-orange text-white'
-                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                          }`}
+                          style={{
+                            ...buttonStyle,
+                            flex: 1,
+                            padding: '12px',
+                            backgroundColor: sessionQuality === value ? '#f59e0b' : '#f3f4f6',
+                            color: sessionQuality === value ? 'white' : '#6b7280',
+                            fontWeight: '600'
+                          }}
                         >
                           {value}
                         </button>
@@ -441,30 +524,39 @@ const ConsultationSession: React.FC = () => {
             </div>
 
             {/* Botão Finalizar */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="flex items-start gap-3 mb-4">
-                <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
-                <div className="flex-1">
-                  <p className="text-sm text-gray-700">
-                    Ao finalizar a consulta, todos os dados serão salvos permanentemente no prontuário do paciente.
-                    Certifique-se de que preencheu a <strong>Evolução do Paciente</strong>.
-                  </p>
-                </div>
+            <div style={{
+              backgroundColor: 'white',
+              padding: '25px',
+              borderRadius: '10px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'start', gap: '15px', marginBottom: '15px' }}>
+                <span style={{ fontSize: '20px' }}>⚠️</span>
+                <p style={{ fontSize: '14px', color: '#374151', margin: '0' }}>
+                  Ao finalizar a consulta, todos os dados serão salvos permanentemente no prontuário do paciente.
+                  Certifique-se de que preencheu a <strong>Evolução do Paciente</strong>.
+                </p>
               </div>
 
               <button
                 onClick={endSession}
                 disabled={!evolution.trim() || isLoading}
-                className="flex items-center gap-2 bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                style={{
+                  ...buttonStyle,
+                  backgroundColor: !evolution.trim() || isLoading ? '#d1d5db' : '#ef4444',
+                  color: 'white',
+                  padding: '15px 25px',
+                  fontSize: '16px',
+                  cursor: !evolution.trim() || isLoading ? 'not-allowed' : 'pointer'
+                }}
               >
-                <Square className="w-5 h-5" />
-                {isLoading ? 'Finalizando...' : 'Finalizar Consulta'}
+                ⏹️ {isLoading ? 'Finalizando...' : 'Finalizar Consulta'}
               </button>
             </div>
           </div>
         )}
       </div>
-    </Layout>
+    </div>
   );
 };
 
