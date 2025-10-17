@@ -110,7 +110,7 @@ router.post('/login', async (req: Request, res: Response) => {
     
     // Atualizar último login
     await client.query(
-      'UPDATE users SET updated_at = CURRENT_TIMESTAMP WHERE id = $1',
+      'UPDATE users SET updated_at = CURRENT_TIMESTAMP, last_login_at = CURRENT_TIMESTAMP WHERE id = $1',
       [user.id]
     );
     

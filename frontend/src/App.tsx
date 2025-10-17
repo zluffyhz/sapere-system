@@ -18,6 +18,7 @@ import Profile from '@/pages/Profile.tsx';
 import AnamneseReal from '@/pages/AnamneseReal.tsx';
 import Administration from '@/pages/Administration.tsx';
 import Therapists from '@/pages/Therapists.tsx';
+import ConsultationSession from '@/pages/ConsultationSession.tsx';
 
 // Componente para rotas protegidas
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -205,6 +206,15 @@ const AppContent: React.FC = () => {
         element={
           <ProtectedRoute>
             <SystemSettings />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/consultation"
+        element={
+          <ProtectedRoute>
+            <ConsultationSession />
           </ProtectedRoute>
         }
       />

@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import { Client } from 'pg';
-import { Session, SessionStatus } from '../types/database';
 
 const getDbClient = () => {
   return new Client({
@@ -15,21 +14,29 @@ const getDbClient = () => {
 
 interface SessionRequest {
   appointment_id?: string;
-  therapist_id: string;
+  therapist_id?: string;
   patient_id: string;
   notes?: string;
 }
 
-// Iniciar nova sessão
+// Iniciar nova sessão/consulta
 export const startSession = async (req: Request, res: Response) => {
   const client = getDbClient();
-  
-  try {
-    const { appointment_id, therapist_id, patient_id, notes } = req.body as SessionRequest;
 
-    if (!therapist_id || !patient_id) {
+  try {
+    const { patient_id, appointment_id, notes } = req.body as SessionRequest;
+    // @ts-ignore - req.user é adicionado pelo middleware de autenticação
+    const therapist_id = req.user?.therapist_id || req.body.therapist_id;
+
+    if (!patient_id) {
       return res.status(400).json({
-        error: 'therapist_id e patient_id são obrigatórios'
+        error: 'patient_id é obrigatório'
+      });
+    }
+
+    if (!therapist_id) {
+      return res.status(400).json({
+        error: 'therapist_id não encontrado. Verifique autenticação.'
       });
     }
 
@@ -37,7 +44,7 @@ export const startSession = async (req: Request, res: Response) => {
 
     // Verificar se há sessão ativa para este terapeuta
     const activeSessionQuery = `
-      SELECT id FROM sessions 
+      SELECT id FROM sessions
       WHERE therapist_id = $1 AND status IN ('active', 'paused')
     `;
     const activeSessionResult = await client.query(activeSessionQuery, [therapist_id]);
@@ -49,10 +56,24 @@ export const startSession = async (req: Request, res: Response) => {
       });
     }
 
+    // Buscar informações do paciente
+    const patientQuery = `
+      SELECT id, name, email, phone, birth_date
+      FROM patients
+      WHERE id = $1
+    `;
+    const patientResult = await client.query(patientQuery, [patient_id]);
+
+    if (patientResult.rows.length === 0) {
+      return res.status(404).json({
+        error: 'Paciente não encontrado'
+      });
+    }
+
     // Criar nova sessão
     const insertQuery = `
       INSERT INTO sessions (
-        appointment_id, therapist_id, patient_id, status, 
+        appointment_id, therapist_id, patient_id, status,
         start_time, notes, created_at, updated_at
       ) VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
       RETURNING *
@@ -62,7 +83,7 @@ export const startSession = async (req: Request, res: Response) => {
       appointment_id || null,
       therapist_id,
       patient_id,
-      'active' as SessionStatus,
+      'active',
       new Date(),
       notes || null
     ];
@@ -70,7 +91,7 @@ export const startSession = async (req: Request, res: Response) => {
     const result = await client.query(insertQuery, values);
     const session = result.rows[0];
 
-    console.log('Nova sessão iniciada:', session.id);
+    console.log('✅ Nova sessão iniciada:', session.id);
 
     res.status(201).json({
       success: true,
@@ -82,12 +103,13 @@ export const startSession = async (req: Request, res: Response) => {
         status: session.status,
         start_time: session.start_time,
         notes: session.notes,
-        created_at: session.created_at
+        created_at: session.created_at,
+        patient: patientResult.rows[0]
       }
     });
 
-  } catch (error) {
-    console.error('Erro ao iniciar sessão:', error);
+  } catch (error: any) {
+    console.error('❌ Erro ao iniciar sessão:', error);
     res.status(500).json({
       error: 'Erro ao iniciar sessão',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -97,9 +119,10 @@ export const startSession = async (req: Request, res: Response) => {
   }
 };
 
-// Pausar sessão
-export const pauseSession = async (req: Request, res: Response) => {
+// Atualizar evolução durante a consulta (salvar rascunho)
+export const updateSessionEvolution = async (req: Request, res: Response) => {
   const { id } = req.params;
+  const { evolution, observations, activities } = req.body;
   const client = getDbClient();
 
   try {
@@ -107,106 +130,47 @@ export const pauseSession = async (req: Request, res: Response) => {
 
     // Verificar se sessão existe e está ativa
     const checkQuery = `
-      SELECT * FROM sessions WHERE id = $1 AND status = 'active'
+      SELECT * FROM sessions WHERE id = $1 AND status IN ('active', 'paused')
     `;
     const checkResult = await client.query(checkQuery, [id]);
 
     if (checkResult.rows.length === 0) {
       return res.status(404).json({
-        error: 'Sessão não encontrada ou não está ativa'
+        error: 'Sessão não encontrada ou já foi finalizada'
       });
     }
 
-    // Pausar sessão
+    // Atualizar evolução
     const updateQuery = `
-      UPDATE sessions 
-      SET status = 'paused', pause_time = NOW(), updated_at = NOW()
-      WHERE id = $1
-      RETURNING *
-    `;
-
-    const result = await client.query(updateQuery, [id]);
-    const session = result.rows[0];
-
-    console.log('Sessão pausada:', id);
-
-    res.json({
-      success: true,
-      session: {
-        id: session.id,
-        status: session.status,
-        pause_time: session.pause_time
-      }
-    });
-
-  } catch (error) {
-    console.error('Erro ao pausar sessão:', error);
-    res.status(500).json({
-      error: 'Erro ao pausar sessão',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
-  } finally {
-    await client.end();
-  }
-};
-
-// Retomar sessão
-export const resumeSession = async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const client = getDbClient();
-
-  try {
-    await client.connect();
-
-    // Verificar se sessão existe e está pausada
-    const checkQuery = `
-      SELECT * FROM sessions WHERE id = $1 AND status = 'paused'
-    `;
-    const checkResult = await client.query(checkQuery, [id]);
-
-    if (checkResult.rows.length === 0) {
-      return res.status(404).json({
-        error: 'Sessão não encontrada ou não está pausada'
-      });
-    }
-
-    const session = checkResult.rows[0];
-
-    // Calcular duração da pausa
-    const pauseStart = new Date(session.pause_time);
-    const resumeTime = new Date();
-    const pauseDuration = Math.floor((resumeTime.getTime() - pauseStart.getTime()) / 1000);
-
-    // Retomar sessão
-    const updateQuery = `
-      UPDATE sessions 
-      SET status = 'active', 
-          resume_time = $2, 
-          pause_duration = COALESCE(pause_duration, 0) + $3,
+      UPDATE sessions
+      SET evolution = $2,
+          observations = $3,
+          activities = $4,
           updated_at = NOW()
       WHERE id = $1
       RETURNING *
     `;
 
-    const result = await client.query(updateQuery, [id, resumeTime, pauseDuration]);
-    const updatedSession = result.rows[0];
+    const result = await client.query(updateQuery, [id, evolution, observations, activities]);
+    const session = result.rows[0];
 
-    console.log('Sessão retomada:', id);
+    console.log('✅ Evolução atualizada:', id);
 
     res.json({
       success: true,
       session: {
-        id: updatedSession.id,
-        status: updatedSession.status,
-        resume_time: updatedSession.resume_time,
-        pause_duration: updatedSession.pause_duration
+        id: session.id,
+        evolution: session.evolution,
+        observations: session.observations,
+        activities: session.activities,
+        updated_at: session.updated_at
       }
     });
 
-  } catch (error) {
-    console.error('Erro ao retomar sessão:', error);
+  } catch (error: any) {
+    console.error('❌ Erro ao atualizar evolução:', error);
     res.status(500).json({
-      error: 'Erro ao retomar sessão',
+      error: 'Erro ao atualizar evolução',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   } finally {
@@ -214,10 +178,18 @@ export const resumeSession = async (req: Request, res: Response) => {
   }
 };
 
-// Finalizar sessão
-export const completeSession = async (req: Request, res: Response) => {
+// Finalizar consulta/sessão
+export const endSession = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { notes } = req.body;
+  const {
+    evolution,
+    observations,
+    activities,
+    homework,
+    next_steps,
+    patient_mood,
+    session_quality
+  } = req.body;
   const client = getDbClient();
 
   try {
@@ -239,30 +211,63 @@ export const completeSession = async (req: Request, res: Response) => {
     const endTime = new Date();
     const startTime = new Date(session.start_time);
 
-    // Calcular duração total
-    let totalDuration = Math.floor((endTime.getTime() - startTime.getTime()) / 1000);
-    
+    // Calcular duração total em minutos
+    let totalDuration = Math.floor((endTime.getTime() - startTime.getTime()) / 60000);
+
     // Subtrair tempo de pausa se houver
     if (session.pause_duration) {
-      totalDuration -= session.pause_duration;
+      totalDuration -= Math.floor(session.pause_duration / 60);
+    }
+
+    // Validar que evolution foi preenchido
+    if (!evolution || evolution.trim() === '') {
+      return res.status(400).json({
+        error: 'O campo "evolução" é obrigatório para finalizar a sessão'
+      });
     }
 
     // Finalizar sessão
     const updateQuery = `
-      UPDATE sessions 
-      SET status = 'completed', 
-          end_time = $2, 
+      UPDATE sessions
+      SET status = 'completed',
+          end_time = $2,
           total_duration = $3,
-          notes = COALESCE($4, notes),
+          evolution = $4,
+          observations = $5,
+          activities = $6,
+          homework = $7,
+          next_steps = $8,
+          patient_mood = $9,
+          session_quality = $10,
           updated_at = NOW()
       WHERE id = $1
       RETURNING *
     `;
 
-    const result = await client.query(updateQuery, [id, endTime, totalDuration, notes]);
+    const result = await client.query(updateQuery, [
+      id,
+      endTime,
+      totalDuration,
+      evolution,
+      observations,
+      activities,
+      homework,
+      next_steps,
+      patient_mood,
+      session_quality
+    ]);
+
     const completedSession = result.rows[0];
 
-    console.log('Sessão finalizada:', id, `Duração: ${totalDuration}s`);
+    // Buscar informações do paciente
+    const patientQuery = `
+      SELECT id, name, email, phone
+      FROM patients
+      WHERE id = $1
+    `;
+    const patientResult = await client.query(patientQuery, [completedSession.patient_id]);
+
+    console.log('✅ Sessão finalizada:', id, `| Duração: ${totalDuration} minutos`);
 
     res.json({
       success: true,
@@ -272,13 +277,19 @@ export const completeSession = async (req: Request, res: Response) => {
         start_time: completedSession.start_time,
         end_time: completedSession.end_time,
         total_duration: completedSession.total_duration,
-        pause_duration: completedSession.pause_duration,
-        notes: completedSession.notes
+        evolution: completedSession.evolution,
+        observations: completedSession.observations,
+        activities: completedSession.activities,
+        homework: completedSession.homework,
+        next_steps: completedSession.next_steps,
+        patient_mood: completedSession.patient_mood,
+        session_quality: completedSession.session_quality,
+        patient: patientResult.rows[0]
       }
     });
 
-  } catch (error) {
-    console.error('Erro ao finalizar sessão:', error);
+  } catch (error: any) {
+    console.error('❌ Erro ao finalizar sessão:', error);
     res.status(500).json({
       error: 'Erro ao finalizar sessão',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -288,22 +299,31 @@ export const completeSession = async (req: Request, res: Response) => {
   }
 };
 
-// Obter sessão ativa do terapeuta
+// Buscar sessão ativa do terapeuta
 export const getActiveSession = async (req: Request, res: Response) => {
-  const { therapist_id } = req.params;
   const client = getDbClient();
 
   try {
+    // @ts-ignore - req.user é adicionado pelo middleware de autenticação
+    const therapist_id = req.user?.therapist_id || req.params.therapist_id;
+
+    if (!therapist_id) {
+      return res.status(400).json({
+        error: 'therapist_id não encontrado'
+      });
+    }
+
     await client.connect();
 
     const query = `
-      SELECT s.*, 
+      SELECT s.*,
              p.name as patient_name,
-             t.user_id as therapist_user_id
+             p.email as patient_email,
+             p.phone as patient_phone,
+             p.birth_date as patient_birth_date
       FROM sessions s
       LEFT JOIN patients p ON s.patient_id = p.id
-      LEFT JOIN therapists t ON s.therapist_id = t.id
-      WHERE s.therapist_id = $1 
+      WHERE s.therapist_id = $1
         AND s.status IN ('active', 'paused')
       ORDER BY s.created_at DESC
       LIMIT 1
@@ -327,19 +347,25 @@ export const getActiveSession = async (req: Request, res: Response) => {
         appointment_id: session.appointment_id,
         therapist_id: session.therapist_id,
         patient_id: session.patient_id,
-        patient_name: session.patient_name,
         status: session.status,
         start_time: session.start_time,
-        pause_time: session.pause_time,
-        resume_time: session.resume_time,
-        pause_duration: session.pause_duration,
+        evolution: session.evolution,
+        observations: session.observations,
+        activities: session.activities,
         notes: session.notes,
-        created_at: session.created_at
+        created_at: session.created_at,
+        patient: {
+          id: session.patient_id,
+          name: session.patient_name,
+          email: session.patient_email,
+          phone: session.patient_phone,
+          birthDate: session.patient_birth_date
+        }
       }
     });
 
-  } catch (error) {
-    console.error('Erro ao buscar sessão ativa:', error);
+  } catch (error: any) {
+    console.error('❌ Erro ao buscar sessão ativa:', error);
     res.status(500).json({
       error: 'Erro ao buscar sessão ativa',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -349,61 +375,172 @@ export const getActiveSession = async (req: Request, res: Response) => {
   }
 };
 
-// Listar histórico de sessões
-export const getSessionHistory = async (req: Request, res: Response) => {
-  const { therapist_id } = req.params;
-  const { limit = 10, offset = 0 } = req.query;
+// Listar histórico de sessões de um paciente
+export const getPatientSessions = async (req: Request, res: Response) => {
+  const { patientId } = req.params;
   const client = getDbClient();
 
   try {
     await client.connect();
 
     const query = `
-      SELECT s.*, 
-             p.name as patient_name,
-             a.appointment_date
+      SELECT s.*,
+             t.professional_name as therapist_name,
+             t.specialties as therapist_specialties
       FROM sessions s
-      LEFT JOIN patients p ON s.patient_id = p.id
-      LEFT JOIN appointments a ON s.appointment_id = a.id
-      WHERE s.therapist_id = $1 
+      LEFT JOIN therapists t ON s.therapist_id = t.id
+      WHERE s.patient_id = $1
         AND s.status = 'completed'
-      ORDER BY s.created_at DESC
-      LIMIT $2 OFFSET $3
+      ORDER BY s.start_time DESC
     `;
 
-    const result = await client.query(query, [therapist_id, limit, offset]);
+    const result = await client.query(query, [patientId]);
 
     const sessions = result.rows.map(session => ({
       id: session.id,
-      appointment_id: session.appointment_id,
-      patient_id: session.patient_id,
-      patient_name: session.patient_name,
-      appointment_date: session.appointment_date,
+      therapist_id: session.therapist_id,
+      therapist_name: session.therapist_name,
+      therapist_specialties: session.therapist_specialties,
       start_time: session.start_time,
       end_time: session.end_time,
       total_duration: session.total_duration,
-      pause_duration: session.pause_duration,
-      notes: session.notes,
+      evolution: session.evolution,
+      observations: session.observations,
+      activities: session.activities,
+      homework: session.homework,
+      next_steps: session.next_steps,
+      patient_mood: session.patient_mood,
+      session_quality: session.session_quality,
       created_at: session.created_at
     }));
 
     res.json({
       success: true,
-      sessions,
-      pagination: {
-        limit: parseInt(limit as string),
-        offset: parseInt(offset as string),
-        total: sessions.length
-      }
+      sessions
     });
 
-  } catch (error) {
-    console.error('Erro ao buscar histórico de sessões:', error);
+  } catch (error: any) {
+    console.error('❌ Erro ao buscar sessões do paciente:', error);
     res.status(500).json({
-      error: 'Erro ao buscar histórico de sessões',
+      error: 'Erro ao buscar sessões',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   } finally {
     await client.end();
   }
 };
+
+// Pausar sessão (mantido do código original)
+export const pauseSession = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const client = getDbClient();
+
+  try {
+    await client.connect();
+
+    const checkQuery = `
+      SELECT * FROM sessions WHERE id = $1 AND status = 'active'
+    `;
+    const checkResult = await client.query(checkQuery, [id]);
+
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({
+        error: 'Sessão não encontrada ou não está ativa'
+      });
+    }
+
+    const updateQuery = `
+      UPDATE sessions
+      SET status = 'paused', pause_time = NOW(), updated_at = NOW()
+      WHERE id = $1
+      RETURNING *
+    `;
+
+    const result = await client.query(updateQuery, [id]);
+    const session = result.rows[0];
+
+    console.log('⏸️ Sessão pausada:', id);
+
+    res.json({
+      success: true,
+      session: {
+        id: session.id,
+        status: session.status,
+        pause_time: session.pause_time
+      }
+    });
+
+  } catch (error: any) {
+    console.error('❌ Erro ao pausar sessão:', error);
+    res.status(500).json({
+      error: 'Erro ao pausar sessão',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  } finally {
+    await client.end();
+  }
+};
+
+// Retomar sessão (mantido do código original)
+export const resumeSession = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const client = getDbClient();
+
+  try {
+    await client.connect();
+
+    const checkQuery = `
+      SELECT * FROM sessions WHERE id = $1 AND status = 'paused'
+    `;
+    const checkResult = await client.query(checkQuery, [id]);
+
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({
+        error: 'Sessão não encontrada ou não está pausada'
+      });
+    }
+
+    const session = checkResult.rows[0];
+    const pauseStart = new Date(session.pause_time);
+    const resumeTime = new Date();
+    const pauseDuration = Math.floor((resumeTime.getTime() - pauseStart.getTime()) / 1000);
+
+    const updateQuery = `
+      UPDATE sessions
+      SET status = 'active',
+          resume_time = $2,
+          pause_duration = COALESCE(pause_duration, 0) + $3,
+          updated_at = NOW()
+      WHERE id = $1
+      RETURNING *
+    `;
+
+    const result = await client.query(updateQuery, [id, resumeTime, pauseDuration]);
+    const updatedSession = result.rows[0];
+
+    console.log('▶️ Sessão retomada:', id);
+
+    res.json({
+      success: true,
+      session: {
+        id: updatedSession.id,
+        status: updatedSession.status,
+        resume_time: updatedSession.resume_time,
+        pause_duration: updatedSession.pause_duration
+      }
+    });
+
+  } catch (error: any) {
+    console.error('❌ Erro ao retomar sessão:', error);
+    res.status(500).json({
+      error: 'Erro ao retomar sessão',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  } finally {
+    await client.end();
+  }
+};
+
+// Alias para manter compatibilidade com rotas antigas
+export const completeSession = endSession;
+export const getSessionHistory = getPatientSessions;

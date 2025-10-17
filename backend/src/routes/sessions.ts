@@ -1,49 +1,64 @@
 import { Router } from 'express';
-import { 
-  startSession, 
-  pauseSession, 
-  resumeSession, 
-  completeSession, 
+import {
+  startSession,
+  pauseSession,
+  resumeSession,
+  completeSession,
+  endSession,
+  updateSessionEvolution,
   getActiveSession,
-  getSessionHistory 
+  getSessionHistory,
+  getPatientSessions
 } from '../controllers/sessionController';
 import { authenticateToken, requireTherapistOrAdmin, logActivity } from '../middleware/auth';
-import { canAccessSession, canStartSession, canAccessTherapistSessions } from '../middleware/sessionPermissions';
 
 const router = Router();
 
-// Aplicar autenticação e autorização para todas as rotas
+// Aplicar autenticação para todas as rotas
 router.use(authenticateToken);
-router.use(requireTherapistOrAdmin);
 
 // Iniciar nova sessão
-router.post('/start', canStartSession, logActivity('start_session', 'session'), startSession);
+router.post('/start', startSession);
 
-// Pausar sessão ativa
-router.put('/:id/pause', canAccessSession, logActivity('pause_session', 'session'), pauseSession);
+// Buscar sessão ativa
+router.get('/active', getActiveSession);
+router.get('/active/:therapist_id', getActiveSession);
 
-// Retomar sessão pausada
-router.put('/:id/resume', canAccessSession, logActivity('resume_session', 'session'), resumeSession);
+// Atualizar evolução durante a sessão (salvar rascunho)
+router.patch('/:id/evolution', updateSessionEvolution);
 
 // Finalizar sessão
-router.put('/:id/complete', canAccessSession, logActivity('complete_session', 'session'), completeSession);
+router.post('/:id/end', endSession);
 
-// Obter sessão ativa do terapeuta
-router.get('/active/:therapist_id', canAccessTherapistSessions, getActiveSession);
+// Pausar sessão ativa (opcional)
+router.put('/:id/pause', pauseSession);
 
-// Obter histórico de sessões do terapeuta
-router.get('/history/:therapist_id', canAccessTherapistSessions, getSessionHistory);
+// Retomar sessão pausada (opcional)
+router.put('/:id/resume', resumeSession);
+
+// Finalizar sessão (compatibilidade com rota antiga)
+router.put('/:id/complete', completeSession);
+
+// Histórico de sessões de um paciente
+router.get('/patient/:patientId', getPatientSessions);
+
+// Obter histórico de sessões do terapeuta (compatibilidade)
+router.get('/history/:therapist_id', getSessionHistory);
 
 // Rota de teste
 router.get('/test', (req, res) => {
   res.json({
     message: 'Rotas de sessão funcionando',
+    version: '2.0 - Sistema de Consulta com Timer',
     endpoints: {
       start: 'POST /api/sessions/start',
+      active: 'GET /api/sessions/active',
+      updateEvolution: 'PATCH /api/sessions/:id/evolution',
+      end: 'POST /api/sessions/:id/end',
       pause: 'PUT /api/sessions/:id/pause',
       resume: 'PUT /api/sessions/:id/resume',
       complete: 'PUT /api/sessions/:id/complete',
-      active: 'GET /api/sessions/active/:therapist_id',
+      patientHistory: 'GET /api/sessions/patient/:patientId',
       history: 'GET /api/sessions/history/:therapist_id'
     }
   });

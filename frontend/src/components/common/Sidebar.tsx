@@ -1,18 +1,19 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { 
-  Home, 
-  Users, 
-  Calendar, 
-  UserCheck, 
-  Settings, 
+import {
+  Home,
+  Users,
+  Calendar,
+  UserCheck,
+  Settings,
   LogOut,
   Heart,
   Shield,
   Baby,
   TestTube,
   MessageSquare,
-  UserCog
+  UserCog,
+  Clock
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { ConditionalRender } from '@/components/common/ProtectedRoute';
@@ -48,6 +49,7 @@ const Sidebar: React.FC = () => {
   const adminNavigation = [
     { name: 'Pacientes', href: '/patients', icon: Users, roles: ['admin', 'profissional'] },
     { name: 'Agendamentos', href: '/appointments', icon: Calendar, roles: ['admin', 'profissional'] },
+    { name: 'Consulta', href: '/consultation', icon: Clock, roles: ['admin', 'profissional'] },
     { name: 'Anamnese', href: '/anamnese', icon: Heart, roles: ['admin', 'profissional'] },
     { name: 'Comunicação', href: '/communication', icon: MessageSquare, roles: ['admin', 'profissional'] },
     { name: 'Terapeutas', href: '/therapists', icon: UserCheck, roles: ['admin'] },
