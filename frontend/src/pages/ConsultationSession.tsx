@@ -1,16 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import Layout from '@/components/common/Layout';
+import {
+  Play,
+  Square,
+  Save,
+  CheckCircle,
+  Clock,
+  User,
+  FileText,
+  Activity,
+  ListTodo,
+  AlertCircle
+} from 'lucide-react';
 import axios from 'axios';
-import { useAuth } from '@/context/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { useAppNavigation } from '@/components/Navigation';
 
 interface Patient {
   id: string;
   name: string;
   email?: string;
   phone?: string;
-  birthDate?: string;
-  birth_date?: string;
 }
 
 interface Session {
@@ -21,192 +29,66 @@ interface Session {
   evolution?: string;
   observations?: string;
   activities?: string;
-  patient: Patient;
+  homework?: string;
 }
 
 const ConsultationSession: React.FC = () => {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-  const { goToDashboard } = useAppNavigation();
-
   const [patients, setPatients] = useState<Patient[]>([]);
-  const [selectedPatient, setSelectedPatient] = useState<string>('');
-  const [activeSession, setActiveSession] = useState<Session | null>(null);
+  const [selectedPatientId, setSelectedPatientId] = useState<string>('');
   const [isSessionActive, setIsSessionActive] = useState(false);
+  const [activeSession, setActiveSession] = useState<Session | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
-  const [timerInterval, setTimerInterval] = useState<NodeJS.Timeout | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   // Campos do formulário
   const [evolution, setEvolution] = useState('');
   const [observations, setObservations] = useState('');
   const [activities, setActivities] = useState('');
   const [homework, setHomework] = useState('');
-  const [nextSteps, setNextSteps] = useState('');
-  const [patientMood, setPatientMood] = useState('');
-  const [sessionQuality, setSessionQuality] = useState<number>(3);
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    fetchPatients();
-    checkActiveSession();
+    loadPatients();
   }, []);
 
   useEffect(() => {
     if (isSessionActive && activeSession) {
-      const interval = setInterval(() => {
-        const start = new Date(activeSession.start_time).getTime();
-        const now = new Date().getTime();
-        const elapsed = Math.floor((now - start) / 1000);
-        setElapsedTime(elapsed);
+      // Iniciar timer
+      timerIntervalRef.current = setInterval(() => {
+        setElapsedTime(prev => prev + 1);
       }, 1000);
-
-      setTimerInterval(interval);
-
-      return () => {
-        if (interval) clearInterval(interval);
-      };
     } else {
-      if (timerInterval) {
-        clearInterval(timerInterval);
-        setTimerInterval(null);
+      // Parar timer
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
       }
     }
+
+    return () => {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+      }
+    };
   }, [isSessionActive, activeSession]);
 
-  const fetchPatients = async () => {
+  const loadPatients = async () => {
     try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
       const token = localStorage.getItem('token');
-      const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/patients`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+
+      const response = await axios.get(`${apiUrl}/api/patients`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
       setPatients(response.data);
     } catch (error) {
       console.error('Erro ao carregar pacientes:', error);
-    }
-  };
-
-  const checkActiveSession = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/sessions/active`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      if (response.data) {
-        setActiveSession(response.data);
-        setIsSessionActive(true);
-        setSelectedPatient(response.data.patient_id);
-
-        // Carregar dados salvos
-        if (response.data.evolution) setEvolution(response.data.evolution);
-        if (response.data.observations) setObservations(response.data.observations);
-        if (response.data.activities) setActivities(response.data.activities);
-      }
-    } catch (error) {
-      console.log('Nenhuma sessão ativa');
-    }
-  };
-
-  const startSession = async () => {
-    setIsLoading(true);
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/sessions/start`,
-        { patient_id: selectedPatient },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      setActiveSession(response.data);
-      setIsSessionActive(true);
-    } catch (error: any) {
-      console.error('Erro ao iniciar sessão:', error);
-      alert(error.response?.data?.error || 'Erro ao iniciar consulta');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const saveEvolution = async () => {
-    if (!activeSession) return;
-
-    setIsSaving(true);
-    try {
-      const token = localStorage.getItem('token');
-      await axios.patch(
-        `${import.meta.env.VITE_API_URL}/sessions/${activeSession.id}/evolution`,
-        {
-          evolution,
-          observations,
-          activities,
-          homework,
-          nextSteps,
-          patientMood,
-          sessionQuality
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      alert('Rascunho salvo com sucesso!');
-    } catch (error: any) {
-      console.error('Erro ao salvar:', error);
-      alert('Erro ao salvar rascunho');
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const endSession = async () => {
-    if (!evolution.trim()) {
-      alert('Por favor, preencha o campo "Evolução do Paciente" antes de finalizar.');
-      return;
-    }
-
-    if (!confirm('Tem certeza que deseja finalizar esta consulta?')) {
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const token = localStorage.getItem('token');
-      await axios.post(
-        `${import.meta.env.VITE_API_URL}/sessions/${activeSession!.id}/end`,
-        {
-          evolution,
-          observations,
-          activities,
-          homework,
-          nextSteps,
-          patientMood,
-          sessionQuality
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      setIsSessionActive(false);
-      setActiveSession(null);
-      setElapsedTime(0);
-      setSelectedPatient('');
-
-      // Limpar campos
-      setEvolution('');
-      setObservations('');
-      setActivities('');
-      setHomework('');
-      setNextSteps('');
-      setPatientMood('');
-      setSessionQuality(3);
-
-      alert('Consulta finalizada com sucesso!');
-    } catch (error: any) {
-      console.error('Erro ao finalizar sessão:', error);
-      alert(error.response?.data?.error || 'Erro ao finalizar consulta');
-    } finally {
-      setIsLoading(false);
+      setError('Erro ao carregar lista de pacientes');
     }
   };
 
@@ -214,349 +96,346 @@ const ConsultationSession: React.FC = () => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
 
-  const commonStyle = {
-    fontFamily: 'Arial, sans-serif',
-    boxSizing: 'border-box' as const
+  const handleStartSession = async () => {
+    if (!selectedPatientId) {
+      setError('Por favor, selecione um paciente');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const token = localStorage.getItem('token');
+
+      const response = await axios.post(
+        `${apiUrl}/api/sessions`,
+        {
+          patient_id: selectedPatientId,
+          start_time: new Date().toISOString(),
+          status: 'in_progress'
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      setActiveSession(response.data);
+      setIsSessionActive(true);
+      setElapsedTime(0);
+      setSuccessMessage('Consulta iniciada com sucesso!');
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (error: any) {
+      console.error('Erro ao iniciar sessão:', error);
+      setError(error.response?.data?.message || 'Erro ao iniciar consulta');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const buttonStyle = {
-    ...commonStyle,
-    padding: '10px 20px',
-    border: 'none',
-    borderRadius: '5px',
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: '500' as const
+  const handleSaveDraft = async () => {
+    if (!activeSession) return;
+
+    setIsSaving(true);
+    setError('');
+
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const token = localStorage.getItem('token');
+
+      await axios.put(
+        `${apiUrl}/api/sessions/${activeSession.id}`,
+        {
+          evolution,
+          observations,
+          activities,
+          homework,
+          duration: elapsedTime,
+          status: 'in_progress'
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      setSuccessMessage('Rascunho salvo com sucesso!');
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (error: any) {
+      console.error('Erro ao salvar rascunho:', error);
+      setError(error.response?.data?.message || 'Erro ao salvar rascunho');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const inputStyle = {
-    ...commonStyle,
-    width: '100%',
-    padding: '10px',
-    border: '1px solid #ddd',
-    borderRadius: '5px',
-    fontSize: '14px'
+  const handleFinishSession = async () => {
+    if (!activeSession) return;
+
+    if (!evolution.trim()) {
+      setError('Por favor, preencha a evolução do paciente antes de finalizar');
+      return;
+    }
+
+    setIsSaving(true);
+    setError('');
+
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const token = localStorage.getItem('token');
+
+      await axios.put(
+        `${apiUrl}/api/sessions/${activeSession.id}`,
+        {
+          evolution,
+          observations,
+          activities,
+          homework,
+          duration: elapsedTime,
+          end_time: new Date().toISOString(),
+          status: 'completed'
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      // Resetar estado
+      setIsSessionActive(false);
+      setActiveSession(null);
+      setElapsedTime(0);
+      setEvolution('');
+      setObservations('');
+      setActivities('');
+      setHomework('');
+      setSelectedPatientId('');
+
+      setSuccessMessage('Consulta finalizada com sucesso!');
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (error: any) {
+      console.error('Erro ao finalizar sessão:', error);
+      setError(error.response?.data?.message || 'Erro ao finalizar consulta');
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  const selectedPatient = patients.find(p => p.id === selectedPatientId);
 
   return (
-    <div style={{ ...commonStyle, backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
-      {/* Header */}
-      <div style={{
-        backgroundColor: '#f59e0b',
-        color: 'white',
-        padding: '20px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <button
-            onClick={goToDashboard}
-            style={{
-              ...buttonStyle,
-              backgroundColor: 'rgba(255,255,255,0.2)',
-              color: 'white',
-              border: '1px solid rgba(255,255,255,0.3)'
-            }}
-          >
-            ← Dashboard
-          </button>
-          <div>
-            <h1 style={{ margin: '0', fontSize: '24px', fontWeight: 'bold' }}>
-              ⏰ Sistema de Consulta
-            </h1>
-            <p style={{ margin: '5px 0 0 0', opacity: '0.9' }}>
-              {isSessionActive ? `Paciente: ${activeSession?.patient.name}` : 'Iniciar nova consulta'}
-            </p>
+    <Layout>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-orange-500 to-yellow-400 rounded-xl p-6 text-white">
+          <h1 className="text-3xl font-bold flex items-center gap-3">
+            <Activity className="w-8 h-8" />
+            Sistema de Consulta
+          </h1>
+          <p className="text-orange-50 mt-2">
+            Gerenciar consultas em tempo real com timer e registro de evolução
+          </p>
+        </div>
+
+        {/* Mensagens de Sucesso/Erro */}
+        {successMessage && (
+          <div className="p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3 animate-fade-in">
+            <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+            <span className="text-sm text-green-800">{successMessage}</span>
           </div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-          {isSessionActive && (
-            <div style={{
-              backgroundColor: 'rgba(34,197,94,0.2)',
-              border: '2px solid rgba(34,197,94,0.8)',
-              padding: '10px 20px',
-              borderRadius: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px'
-            }}>
-              <span style={{ fontSize: '24px' }}>⏱️</span>
-              <span style={{ fontSize: '24px', fontFamily: 'monospace', fontWeight: 'bold', color: '#22c55e' }}>
-                {formatTime(elapsedTime)}
-              </span>
-            </div>
-          )}
-          <span>{user?.name}</span>
-          <button onClick={logout} style={{
-            ...buttonStyle,
-            backgroundColor: 'rgba(255,255,255,0.2)',
-            color: 'white',
-            border: '1px solid rgba(255,255,255,0.3)'
-          }}>
-            Sair
-          </button>
-        </div>
-      </div>
+        )}
 
-      <div style={{ padding: '30px', maxWidth: '1200px', margin: '0 auto' }}>
+        {error && (
+          <div className="p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <span className="text-sm text-red-800">{error}</span>
+          </div>
+        )}
 
+        {/* Seleção de Paciente e Controles */}
         {!isSessionActive ? (
-          /* Seleção de Paciente */
-          <div style={{
-            backgroundColor: 'white',
-            padding: '30px',
-            borderRadius: '10px',
-            boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-            marginBottom: '20px'
-          }}>
-            <h2 style={{ color: '#1f2937', marginBottom: '20px', fontSize: '20px', fontWeight: '600' }}>
-              Iniciar Nova Consulta
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <User className="w-5 h-5 text-orange-600" />
+              Selecionar Paciente
             </h2>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151', fontSize: '14px' }}>
-                  Selecione o Paciente
+            <div className="flex gap-4 items-end">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Paciente
                 </label>
                 <select
-                  value={selectedPatient}
-                  onChange={(e) => setSelectedPatient(e.target.value)}
-                  style={inputStyle}
+                  value={selectedPatientId}
+                  onChange={(e) => setSelectedPatientId(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
+                  disabled={isLoading}
                 >
                   <option value="">Selecione um paciente...</option>
                   {patients.map((patient) => (
                     <option key={patient.id} value={patient.id}>
-                      {patient.name} {patient.email ? `(${patient.email})` : ''}
+                      {patient.name}
                     </option>
                   ))}
                 </select>
               </div>
-
               <button
-                onClick={startSession}
-                disabled={!selectedPatient || isLoading}
-                style={{
-                  ...buttonStyle,
-                  backgroundColor: !selectedPatient || isLoading ? '#d1d5db' : '#10b981',
-                  color: 'white',
-                  padding: '15px 25px',
-                  fontSize: '16px',
-                  cursor: !selectedPatient || isLoading ? 'not-allowed' : 'pointer'
-                }}
+                onClick={handleStartSession}
+                disabled={!selectedPatientId || isLoading}
+                className="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold rounded-lg hover:from-green-600 hover:to-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                ▶️ {isLoading ? 'Iniciando...' : 'Iniciar Consulta'}
+                {isLoading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Iniciando...
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-5 h-5" />
+                    Iniciar Consulta
+                  </>
+                )}
               </button>
             </div>
           </div>
         ) : (
-          /* Consulta em Andamento */
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            {/* Informações do Paciente */}
-            <div style={{
-              backgroundColor: 'white',
-              padding: '25px',
-              borderRadius: '10px',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-            }}>
-              <h3 style={{ color: '#1f2937', marginBottom: '15px', fontSize: '18px', fontWeight: '600' }}>
-                👤 Paciente em Atendimento
-              </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px' }}>
+          <>
+            {/* Timer e Informações da Sessão */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '5px' }}>Nome</p>
-                  <p style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937' }}>
-                    {activeSession?.patient.name}
+                  <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                    <User className="w-5 h-5 text-orange-600" />
+                    Consulta em Andamento
+                  </h2>
+                  <p className="text-gray-600 mt-1">
+                    Paciente: <span className="font-medium">{selectedPatient?.name}</span>
                   </p>
                 </div>
-                <div>
-                  <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '5px' }}>Email</p>
-                  <p style={{ fontSize: '16px', color: '#1f2937' }}>
-                    {activeSession?.patient.email || 'Não informado'}
-                  </p>
+                <div className="flex flex-col items-end">
+                  <div className="flex items-center gap-2 text-gray-600 text-sm mb-2">
+                    <Clock className="w-4 h-4" />
+                    Tempo decorrido
+                  </div>
+                  <div className="text-4xl font-bold text-orange-600 font-mono">
+                    {formatTime(elapsedTime)}
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Formulário de Evolução */}
-            <div style={{
-              backgroundColor: 'white',
-              padding: '25px',
-              borderRadius: '10px',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h3 style={{ color: '#1f2937', fontSize: '18px', fontWeight: '600', margin: '0' }}>
-                  📋 Registro da Consulta
-                </h3>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
+              {/* Evolução do Paciente - GRANDE */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-orange-600" />
+                  Evolução do Paciente *
+                </label>
+                <textarea
+                  value={evolution}
+                  onChange={(e) => setEvolution(e.target.value)}
+                  rows={8}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none resize-none"
+                  placeholder="Descreva detalhadamente a evolução do paciente durante a sessão..."
+                />
+              </div>
+
+              {/* Atividades Realizadas */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-orange-600" />
+                  Atividades Realizadas
+                </label>
+                <textarea
+                  value={activities}
+                  onChange={(e) => setActivities(e.target.value)}
+                  rows={4}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none resize-none"
+                  placeholder="Liste as atividades realizadas durante a sessão..."
+                />
+              </div>
+
+              {/* Observações */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-orange-600" />
+                  Observações
+                </label>
+                <textarea
+                  value={observations}
+                  onChange={(e) => setObservations(e.target.value)}
+                  rows={4}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none resize-none"
+                  placeholder="Observações adicionais sobre a sessão..."
+                />
+              </div>
+
+              {/* Tarefas / Lição de Casa */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                  <ListTodo className="w-4 h-4 text-orange-600" />
+                  Tarefas / Lição de Casa
+                </label>
+                <textarea
+                  value={homework}
+                  onChange={(e) => setHomework(e.target.value)}
+                  rows={4}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none resize-none"
+                  placeholder="Tarefas para o paciente realizar até a próxima sessão..."
+                />
+              </div>
+
+              {/* Botões de Ação */}
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
                 <button
-                  onClick={saveEvolution}
+                  onClick={handleSaveDraft}
                   disabled={isSaving}
-                  style={{
-                    ...buttonStyle,
-                    backgroundColor: '#3b82f6',
-                    color: 'white',
-                    cursor: isSaving ? 'not-allowed' : 'pointer',
-                    opacity: isSaving ? 0.5 : 1
-                  }}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
-                  💾 {isSaving ? 'Salvando...' : 'Salvar Rascunho'}
+                  <Save className="w-4 h-4" />
+                  Salvar Rascunho
+                </button>
+                <button
+                  onClick={handleFinishSession}
+                  disabled={isSaving}
+                  className="px-6 py-2 bg-gradient-to-r from-orange-500 to-yellow-400 text-white font-semibold rounded-lg hover:from-orange-600 hover:to-yellow-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {isSaving ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Finalizando...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-5 h-5" />
+                      Finalizar Consulta
+                    </>
+                  )}
                 </button>
               </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151', fontSize: '14px' }}>
-                    Evolução do Paciente *
-                  </label>
-                  <textarea
-                    value={evolution}
-                    onChange={(e) => setEvolution(e.target.value)}
-                    rows={8}
-                    placeholder="Descreva a evolução do paciente nesta consulta..."
-                    style={{ ...inputStyle, resize: 'vertical' as const }}
-                  />
-                  <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '5px' }}>
-                    Este campo é obrigatório e será salvo no prontuário do paciente
-                  </p>
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151', fontSize: '14px' }}>
-                    Atividades Realizadas
-                  </label>
-                  <textarea
-                    value={activities}
-                    onChange={(e) => setActivities(e.target.value)}
-                    rows={4}
-                    placeholder="Descreva as atividades realizadas durante a consulta..."
-                    style={{ ...inputStyle, resize: 'vertical' as const }}
-                  />
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151', fontSize: '14px' }}>
-                    Observações Gerais
-                  </label>
-                  <textarea
-                    value={observations}
-                    onChange={(e) => setObservations(e.target.value)}
-                    rows={4}
-                    placeholder="Observações adicionais sobre a consulta..."
-                    style={{ ...inputStyle, resize: 'vertical' as const }}
-                  />
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151', fontSize: '14px' }}>
-                    Tarefas para Casa
-                  </label>
-                  <textarea
-                    value={homework}
-                    onChange={(e) => setHomework(e.target.value)}
-                    rows={3}
-                    placeholder="Tarefas ou exercícios para o paciente realizar..."
-                    style={{ ...inputStyle, resize: 'vertical' as const }}
-                  />
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151', fontSize: '14px' }}>
-                    Próximos Passos
-                  </label>
-                  <textarea
-                    value={nextSteps}
-                    onChange={(e) => setNextSteps(e.target.value)}
-                    rows={3}
-                    placeholder="Planejamento para as próximas consultas..."
-                    style={{ ...inputStyle, resize: 'vertical' as const }}
-                  />
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px' }}>
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151', fontSize: '14px' }}>
-                      Humor do Paciente
-                    </label>
-                    <select
-                      value={patientMood}
-                      onChange={(e) => setPatientMood(e.target.value)}
-                      style={inputStyle}
-                    >
-                      <option value="">Selecione...</option>
-                      <option value="Muito Positivo">😊 Muito Positivo</option>
-                      <option value="Positivo">🙂 Positivo</option>
-                      <option value="Neutro">😐 Neutro</option>
-                      <option value="Negativo">🙁 Negativo</option>
-                      <option value="Muito Negativo">😢 Muito Negativo</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151', fontSize: '14px' }}>
-                      Qualidade da Sessão (1-5)
-                    </label>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      {[1, 2, 3, 4, 5].map((value) => (
-                        <button
-                          key={value}
-                          onClick={() => setSessionQuality(value)}
-                          style={{
-                            ...buttonStyle,
-                            flex: 1,
-                            padding: '12px',
-                            backgroundColor: sessionQuality === value ? '#f59e0b' : '#f3f4f6',
-                            color: sessionQuality === value ? 'white' : '#6b7280',
-                            fontWeight: '600'
-                          }}
-                        >
-                          {value}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
+          </>
+        )}
 
-            {/* Botão Finalizar */}
-            <div style={{
-              backgroundColor: 'white',
-              padding: '25px',
-              borderRadius: '10px',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'start', gap: '15px', marginBottom: '15px' }}>
-                <span style={{ fontSize: '20px' }}>⚠️</span>
-                <p style={{ fontSize: '14px', color: '#374151', margin: '0' }}>
-                  Ao finalizar a consulta, todos os dados serão salvos permanentemente no prontuário do paciente.
-                  Certifique-se de que preencheu a <strong>Evolução do Paciente</strong>.
-                </p>
-              </div>
-
-              <button
-                onClick={endSession}
-                disabled={!evolution.trim() || isLoading}
-                style={{
-                  ...buttonStyle,
-                  backgroundColor: !evolution.trim() || isLoading ? '#d1d5db' : '#ef4444',
-                  color: 'white',
-                  padding: '15px 25px',
-                  fontSize: '16px',
-                  cursor: !evolution.trim() || isLoading ? 'not-allowed' : 'pointer'
-                }}
-              >
-                ⏹️ {isLoading ? 'Finalizando...' : 'Finalizar Consulta'}
-              </button>
+        {/* Informações Adicionais */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-blue-800">
+              <p className="font-medium mb-1">Dicas:</p>
+              <ul className="list-disc list-inside space-y-1 ml-2">
+                <li>O timer inicia automaticamente ao começar a consulta</li>
+                <li>Use "Salvar Rascunho" para guardar informações durante a sessão</li>
+                <li>Preencha a evolução antes de finalizar a consulta</li>
+                <li>O tempo total será registrado automaticamente</li>
+              </ul>
             </div>
           </div>
-        )}
+        </div>
       </div>
-    </div>
+    </Layout>
   );
 };
 

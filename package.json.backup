@@ -1,0 +1,15 @@
+{
+  "name": "sapere-system",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build",
+    "install": "cd frontend && npm install",
+    "dev": "cd frontend && npm run dev"
+  },
+  "dependencies": {
+    "@supabase/mcp-server-supabase": "^0.4.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0"
+  }
+}
